@@ -21,7 +21,7 @@ interface ExchangeResponse {
 }
 
 class ChangeNowService {
-	private workerUrl = 'https://wallet-api.therealdominic84plays.workers.dev';
+	private workerUrl = 'https://api.rivarawallet.xyz';
 
 	// Currency code mapping
 	getCurrencyCode(symbol: string): string {

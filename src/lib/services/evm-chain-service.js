@@ -3,13 +3,15 @@
  * Handles Ethereum, Polygon address derivation, balance, and transactions
  */
 
+const WORKER_URL = 'https://api.rivarawallet.xyz';
+
 const CHAIN_CONFIGS = {
 	ethereum: {
 		name: 'Ethereum',
 		symbol: 'ETH',
 		chainId: 1,
-		rpcUrl: 'https://eth.llamarpc.com',
-		rpcFallback: 'https://rpc.ankr.com/eth',
+		rpcUrl: `${WORKER_URL}/api/infura`,
+		rpcFallback: `${WORKER_URL}/api/infura`,
 		coingeckoId: 'ethereum',
 		scanApi: 'https://api.etherscan.io/api',
 		explorer: 'https://etherscan.io/tx/',
@@ -19,8 +21,8 @@ const CHAIN_CONFIGS = {
 		name: 'Polygon',
 		symbol: 'POL',
 		chainId: 137,
-		rpcUrl: 'https://polygon.llamarpc.com',
-		rpcFallback: 'https://rpc.ankr.com/polygon',
+		rpcUrl: `${WORKER_URL}/api/polygon/rpc`,
+		rpcFallback: `${WORKER_URL}/api/polygon/rpc`,
 		coingeckoId: 'matic-network',
 		scanApi: 'https://api.polygonscan.com/api',
 		explorer: 'https://polygonscan.com/tx/',
@@ -128,7 +130,7 @@ class EvmChainService {
 		const balance = await this.getBalance(address);
 
 		try {
-			const response = await fetch(`https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=${this.config.coingeckoId}`);
+			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/prices?ids=${this.config.coingeckoId}`);
 			const data = await response.json();
 			const price = data[this.config.coingeckoId]?.usd;
 
@@ -230,7 +232,7 @@ class EvmChainService {
 	 */
 	async getPrice() {
 		try {
-			const response = await fetch(`https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=${this.config.coingeckoId}`);
+			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/prices?ids=${this.config.coingeckoId}`);
 			const data = await response.json();
 			const price = data[this.config.coingeckoId]?.usd;
 

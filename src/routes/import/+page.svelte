@@ -136,11 +136,11 @@
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+<div class="min-h-screen bg-[#070b10] flex items-center justify-center p-4 relative overflow-hidden">
 	<!-- Animated Background -->
 	<div class="absolute inset-0 overflow-hidden">
-		<div class="absolute w-96 h-96 bg-purple-500/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
-		<div class="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style="animation-delay: 1s"></div>
+		<div class="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
+		<div class="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style="animation-delay: 1s"></div>
 	</div>
 
 	<!-- Back Button -->
@@ -154,18 +154,18 @@
 
 	<!-- Main Content -->
 	<div class="relative w-full max-w-md">
-		<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+		<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
 			<!-- Header -->
 			<div class="text-center mb-8">
 				<div class="flex items-center justify-center gap-2 mb-4">
 					<span class="text-3xl">⬢</span>
-					<span class="text-xl font-bold text-white">DogeGage Wallet</span>
+					<span class="text-xl font-bold text-white">Rivara Wallet</span>
 				</div>
 				<h2 class="text-2xl font-bold text-white mb-2">
 					{step === 1 ? 'Import Wallet' : step === 2 ? 'Enter Seed Phrase' : 'Restore Tuffbackup'}
 				</h2>
 				<p class="text-slate-400">
-					{step === 1 ? 'Choose import method' : step === 2 ? 'Enter your 12 or 24 word seed phrase' : 'Upload your .dogegage backup file'}
+					{step === 1 ? 'Choose import method' : step === 2 ? 'Enter your 12 or 24 word seed phrase' : 'Upload your .rivara or .dogegage backup file'}
 				</p>
 			</div>
 
@@ -173,14 +173,14 @@
 				<!-- Step 1: Choose Method -->
 				<div class="space-y-4">
 					<button 
-						class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25"
+						class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25"
 						on:click={showSeedImport}
 					>
 						🌱 Import with Seed Phrase
 					</button>
 
 					<button 
-						class="w-full py-4 bg-slate-800/50 border border-white/10 text-white font-medium rounded-xl hover:bg-slate-700/50 transition-all"
+						class="w-full py-4 bg-stone-800/50 border border-white/10 text-white font-medium rounded-xl hover:bg-stone-700/50 transition-all"
 						on:click={showTuffbackupImport}
 					>
 						💾 Import Tuffbackup File
@@ -201,7 +201,7 @@
 							bind:value={seedPhrase}
 							placeholder="Enter your 12 or 24 word seed phrase"
 							rows="4"
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none resize-none"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none resize-none"
 							required
 						></textarea>
 						<p class="text-xs text-slate-500 mt-1">Separate words with spaces</p>
@@ -216,7 +216,7 @@
 							bind:value={password}
 							placeholder="Create a strong password"
 							minlength="12"
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 							required
 						/>
 						<p class="text-xs text-slate-500 mt-1">Min 12 chars: uppercase, lowercase, number, and symbol required</p>
@@ -231,7 +231,7 @@
 							bind:value={confirmPassword}
 							placeholder="Confirm your password"
 							minlength="8"
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 							required
 						/>
 					</div>
@@ -244,7 +244,7 @@
 
 					<button 
 						type="submit"
-						class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={loading}
 					>
 						{loading ? 'Importing...' : 'Import Wallet'}
@@ -259,7 +259,7 @@
 						</label>
 						<input 
 							type="file"
-							accept=".dogegage"
+							accept=".rivara,.dogegage"
 							bind:this={fileInput}
 							on:change={handleFileSelect}
 							class="hidden"
@@ -267,9 +267,9 @@
 						<button
 							type="button"
 							on:click={() => fileInput.click()}
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-slate-400 hover:border-purple-500 hover:bg-black/40 transition-all text-left"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-slate-400 hover:border-cyan-500 hover:bg-black/40 transition-all text-left"
 						>
-							{backupFile ? backupFile.name : 'Choose .dogegage file...'}
+							{backupFile ? backupFile.name : 'Choose .rivara or .dogegage file...'}
 						</button>
 						<p class="text-xs text-slate-500 mt-1">Select your Tuffbackup file</p>
 					</div>
@@ -283,7 +283,7 @@
 							bind:value={password}
 							placeholder="Enter your wallet password"
 							minlength="8"
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 							required
 						/>
 						<p class="text-xs text-slate-500 mt-1">The password you used when creating the backup</p>
@@ -297,7 +297,7 @@
 
 					<button 
 						type="submit"
-						class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={loading}
 					>
 						{loading ? 'Restoring...' : 'Restore Wallet'}

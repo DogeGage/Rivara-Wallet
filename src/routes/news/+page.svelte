@@ -8,14 +8,14 @@
 	const articles = [
 		{
 			date: 'December 21, 2025',
-			title: 'DogeGage Wallet Launch 🚀',
+			title: 'Rivara Wallet Launch 🚀',
 			featured: true,
-			content: `We're excited to announce the official launch of DogeGage Wallet! After months of development and testing, we're ready to provide you with a crypto wallet that actually works.
+			content: `We're excited to announce the official launch of Rivara Wallet! After months of development and testing, we're ready to provide you with a crypto wallet that actually works.
 
 **What's Included:**
 - Support for 8 major cryptocurrencies (BTC, ETH, SOL, DOGE, LTC, XTZ, TRX, POL)
 - Built-in exchange powered by ChangeNow
-- DogeGage Token (DGAGE) - our native token on Polygon
+- Rivara Token (DGAGE) - our native token on Polygon
 - Tuffbackup encrypted backup system`
 		},
 		{
@@ -28,6 +28,19 @@ Just create a wallet and submit your DGAGE address via our Discord or live chat!
 **Contract Address:** \`0x9b359461EDdCEd424e37c1b3d2e54c875a5a319D\` (Polygon)
 
 DGAGE is our native utility token with unlimited minting capability. Join our community to learn more about upcoming DGAGE features and use cases.`
+		},
+		{
+			date: 'March 11, 2026',
+			title: 'Tuffbackup Format Update — .dogegage is Now Legacy',
+			featured: false,
+			content: `With the rebrand to Rivara Wallet, our Tuffbackup file format has been updated.
+
+**New format:** \`.rivara\`
+**Legacy format:** \`.dogegage\`
+
+If you have an existing \`.dogegage\` backup file from when we were DogeGage Wallet, don't worry — it still works. You can import it on the Import page just like before.
+
+Going forward, all new backups will be saved as \`.rivara\` files. We recommend re-exporting your backup after importing to get the updated format.`
 		},
 		{
 			date: 'Coming Soon',
@@ -49,7 +62,7 @@ Stay tuned for updates!`
 	function formatContent(text: string): string {
 		return text
 			.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-			.replace(/`(.+?)`/g, '<code class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-sm font-mono">$1</code>')
+			.replace(/`(.+?)`/g, '<code class="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded text-sm font-mono">$1</code>')
 			.replace(/^- (.+)$/gm, '<li class="ml-4">$1</li>')
 			.split('\n\n')
 			.map(para => {
@@ -65,10 +78,10 @@ Stay tuned for updates!`
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950">
+<div class="min-h-screen bg-[#070b10]">
 	<!-- Background -->
 	<div class="fixed inset-0 -z-10">
-		<div class="absolute inset-0 bg-gradient-radial from-purple-900/20 via-slate-900 to-slate-900"></div>
+		<div class="absolute inset-0 [background:radial-gradient(ellipse_at_top,rgba(8,145,178,0.18)_0%,#070b10_60%)]"></div>
 	</div>
 
 	<!-- Navigation -->
@@ -76,13 +89,13 @@ Stay tuned for updates!`
 		<div class="flex justify-between items-center">
 			<button class="flex items-center gap-2" on:click={() => goto('/')}>
 				<span class="text-3xl">⬢</span>
-				<span class="text-xl font-semibold text-white">DogeGage Wallet</span>
+				<span class="text-xl font-semibold text-white">Rivara Wallet</span>
 			</button>
 			
 			<div class="flex gap-8 items-center">
 				<Button variant="ghost" on:click={() => goto('/news')}>
-					<Newspaper size={18} class="mr-2 text-purple-400" />
-					<span class="text-purple-400 font-semibold">News</span>
+					<Newspaper size={18} class="mr-2 text-cyan-400" />
+					<span class="text-cyan-400 font-semibold">News</span>
 				</Button>
 				<Button variant="ghost" on:click={() => goto('/docs')}>
 					<BookOpen size={18} class="mr-2" />
@@ -112,14 +125,14 @@ Stay tuned for updates!`
 	<!-- Hero -->
 	<section class="pt-32 pb-16 px-8">
 		<div class="max-w-4xl mx-auto text-center">
-			<div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-6">
-				<Newspaper size={20} class="text-purple-400" />
-				<span class="text-purple-400 font-semibold text-sm">Latest Updates</span>
+			<div class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-6">
+				<Newspaper size={20} class="text-cyan-400" />
+				<span class="text-cyan-400 font-semibold text-sm">Latest Updates</span>
 			</div>
 			<h1 class="text-6xl font-bold mb-6">
-				<span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Latest News</span>
+				<span class="bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent">Latest News</span>
 			</h1>
-			<p class="text-xl text-slate-400">Stay updated with DogeGage Wallet developments</p>
+			<p class="text-xl text-slate-400">Stay updated with Rivara Wallet developments</p>
 		</div>
 	</section>
 
@@ -130,7 +143,7 @@ Stay tuned for updates!`
 				<Card variant="elevated" hoverable>
 					<div class="p-8 relative">
 						{#if article.featured}
-							<div class="absolute top-6 right-6 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-full">
+							<div class="absolute top-6 right-6 px-3 py-1 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white text-xs font-bold rounded-full">
 								Latest
 							</div>
 						{/if}
@@ -155,9 +168,9 @@ Stay tuned for updates!`
 	<section class="pb-32 px-8">
 		<div class="max-w-4xl mx-auto">
 			<Card variant="elevated">
-				<div class="p-12 text-center bg-gradient-to-br from-purple-900/20 to-pink-900/20">
+				<div class="p-12 text-center bg-gradient-to-br from-cyan-900/20 to-cyan-900/20">
 					<h2 class="text-3xl font-bold mb-4">Ready to get started?</h2>
-					<p class="text-slate-400 mb-8">Create your wallet and join the DogeGage community</p>
+					<p class="text-slate-400 mb-8">Create your wallet and join the Rivara community</p>
 					<div class="flex gap-4 justify-center">
 						<Button color="primary" size="lg" on:click={() => goto('/create')}>
 							Create Wallet

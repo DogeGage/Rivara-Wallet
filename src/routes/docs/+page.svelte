@@ -13,7 +13,7 @@
 			{ id: 'import-wallet', title: 'Importing a Wallet' },
 			{ id: 'backup', title: 'Backup & Recovery' }
 		]},
-		{ id: 'using', title: 'Using DogeGage', items: [
+		{ id: 'using', title: 'Using Rivara', items: [
 			{ id: 'send', title: 'Sending Crypto' },
 			{ id: 'receive', title: 'Receiving Crypto' },
 			{ id: 'exchange', title: 'Exchanging Crypto' },
@@ -37,10 +37,10 @@
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950">
+<div class="min-h-screen bg-[#070b10]">
 	<!-- Background -->
 	<div class="fixed inset-0 -z-10">
-		<div class="absolute inset-0 bg-gradient-radial from-purple-900/20 via-slate-900 to-slate-900"></div>
+		<div class="absolute inset-0 [background:radial-gradient(ellipse_at_top,rgba(8,145,178,0.18)_0%,#070b10_60%)]"></div>
 	</div>
 
 	<!-- Navigation -->
@@ -48,7 +48,7 @@
 		<div class="flex justify-between items-center">
 			<button class="flex items-center gap-2" on:click={() => goto('/')}>
 				<span class="text-3xl">⬢</span>
-				<span class="text-xl font-semibold text-white">DogeGage Wallet</span>
+				<span class="text-xl font-semibold text-white">Rivara Wallet</span>
 			</button>
 			
 			<div class="flex gap-8 items-center">
@@ -57,8 +57,8 @@
 					News
 				</Button>
 				<Button variant="ghost" on:click={() => goto('/docs')}>
-					<BookOpen size={18} class="mr-2 text-purple-400" />
-					<span class="text-purple-400 font-semibold">Docs</span>
+					<BookOpen size={18} class="mr-2 text-cyan-400" />
+					<span class="text-cyan-400 font-semibold">Docs</span>
 				</Button>
 				<Button variant="ghost" on:click={() => goto('/support')}>
 					<HelpCircle size={18} class="mr-2" />
@@ -84,14 +84,14 @@
 	<!-- Hero -->
 	<section class="pt-32 pb-16 px-8">
 		<div class="max-w-6xl mx-auto text-center">
-			<div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-6">
-				<BookOpen size={20} class="text-purple-400" />
-				<span class="text-purple-400 font-semibold text-sm">Documentation</span>
+			<div class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-6">
+				<BookOpen size={20} class="text-cyan-400" />
+				<span class="text-cyan-400 font-semibold text-sm">Documentation</span>
 			</div>
 			<h1 class="text-6xl font-bold mb-6">
-				<span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Documentation</span>
+				<span class="bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent">Documentation</span>
 			</h1>
-			<p class="text-xl text-slate-400">Everything you need to know about using DogeGage Wallet</p>
+			<p class="text-xl text-slate-400">Everything you need to know about using Rivara Wallet</p>
 		</div>
 	</section>
 
@@ -108,7 +108,7 @@
 								<div class="space-y-1">
 									{#each section.items as item}
 										<button
-											class="w-full text-left px-3 py-2 rounded-lg text-sm transition-all {activeSection === item.id ? 'bg-purple-600 text-white font-semibold' : 'text-slate-400 hover:text-white hover:bg-white/5'}"
+											class="w-full text-left px-3 py-2 rounded-lg text-sm transition-all {activeSection === item.id ? 'bg-cyan-600 text-white font-semibold' : 'text-slate-400 hover:text-white hover:bg-white/5'}"
 											on:click={() => scrollToSection(item.id)}
 										>
 											{item.title}
@@ -132,28 +132,28 @@
 							
 							<div class="space-y-4">
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">1</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">1</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Click "Create Wallet"</h4>
 										<p class="text-sm text-slate-400">From the landing page, click the "Create Wallet" button.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">2</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Write Down Your Seed Phrase</h4>
 										<p class="text-sm text-slate-400">You'll see 12 words. Write them down on paper in order. Never store them digitally or take a screenshot.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">3</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Set a Password</h4>
 										<p class="text-sm text-slate-400">Create a strong password to encrypt your wallet. This password is only for this device.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">4</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">4</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Done!</h4>
 										<p class="text-sm text-slate-400">Your wallet is created and ready to use. Keep your seed phrase safe!</p>
@@ -177,21 +177,21 @@
 							
 							<div class="space-y-4">
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">1</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">1</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Click "Import Wallet"</h4>
 										<p class="text-sm text-slate-400">From the landing page, click "Import Wallet".</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">2</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Enter Your Seed Phrase</h4>
 										<p class="text-sm text-slate-400">Type or paste your 12-word seed phrase. Make sure the words are in the correct order.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">3</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Set a Password</h4>
 										<p class="text-sm text-slate-400">Create a password to encrypt your wallet on this device.</p>
@@ -199,8 +199,8 @@
 								</div>
 							</div>
 							
-							<div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-								<p class="text-blue-200 text-sm"><strong>💡 Tip:</strong> DogeGage uses standard BIP39 seed phrases. You can import wallets from other BIP39-compatible wallets.</p>
+							<div class="mt-4 p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+								<p class="text-cyan-200 text-sm"><strong>💡 Tip:</strong> Rivara uses standard BIP39 seed phrases. You can import wallets from other BIP39-compatible wallets.</p>
 							</div>
 						</div>
 					</Card>
@@ -211,7 +211,7 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Backup & Recovery</h2>
-							<p class="text-slate-300 mb-4">DogeGage offers two backup methods: seed phrase and Tuffbackup.</p>
+							<p class="text-slate-300 mb-4">Rivara offers two backup methods: seed phrase and Tuffbackup.</p>
 							
 							<h3 class="text-lg font-semibold text-white mb-2 mt-4">Seed Phrase Backup</h3>
 							<p class="text-sm text-slate-400 mb-4">Your 12-word seed phrase is the master backup. Write it down and store it securely offline.</p>
@@ -225,7 +225,7 @@
 									<ol class="text-xs text-slate-400 space-y-1 list-decimal list-inside">
 										<li>Go to Settings</li>
 										<li>Click "Download Tuffbackup"</li>
-										<li>Save the <code class="text-purple-300">tuffbackup.dogegage</code> file</li>
+										<li>Save the <code class="text-cyan-300">tuffbackup.rivara</code> file</li>
 									</ol>
 								</div>
 								<div class="p-3 bg-white/5 rounded-lg border border-white/10">
@@ -249,21 +249,21 @@
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Sending Crypto</h2>
 							<div class="space-y-4">
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">1</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">1</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Select Cryptocurrency</h4>
 										<p class="text-sm text-slate-400">Click on the crypto you want to send from your wallet.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">2</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Click "Send"</h4>
 										<p class="text-sm text-slate-400">Enter the recipient's address and amount.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">3</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Review & Confirm</h4>
 										<p class="text-sm text-slate-400">Double-check the address and amount. Crypto transactions cannot be reversed!</p>
@@ -285,29 +285,29 @@
 							<p class="text-slate-300 mb-4">To receive crypto, share your wallet address with the sender.</p>
 							<div class="space-y-4">
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">1</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">1</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Select Cryptocurrency</h4>
 										<p class="text-sm text-slate-400">Click on the crypto you want to receive.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">2</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Click "Receive"</h4>
 										<p class="text-sm text-slate-400">Your wallet address and QR code will be displayed.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">3</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Share Your Address</h4>
 										<p class="text-sm text-slate-400">Copy the address or let the sender scan your QR code.</p>
 									</div>
 								</div>
 							</div>
-							<div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-								<p class="text-blue-200 text-sm"><strong>💡 Tip:</strong> Each cryptocurrency has its own address. Make sure you're sharing the correct address for the crypto you want to receive.</p>
+							<div class="mt-4 p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+								<p class="text-cyan-200 text-sm"><strong>💡 Tip:</strong> Each cryptocurrency has its own address. Make sure you're sharing the correct address for the crypto you want to receive.</p>
 							</div>
 						</div>
 					</Card>
@@ -318,31 +318,31 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Exchanging Crypto</h2>
-							<p class="text-slate-300 mb-4">DogeGage has a built-in exchange powered by ChangeNow. Swap crypto without leaving the wallet.</p>
+							<p class="text-slate-300 mb-4">Rivara has a built-in exchange powered by ChangeNow. Swap crypto without leaving the wallet.</p>
 							<div class="space-y-4">
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">1</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">1</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Go to Exchange</h4>
 										<p class="text-sm text-slate-400">Click "Exchange" in the navigation.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">2</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Select Currencies</h4>
 										<p class="text-sm text-slate-400">Choose what you're sending and what you want to receive.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">3</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">3</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Enter Amount</h4>
 										<p class="text-sm text-slate-400">Type the amount you want to exchange. You'll see the estimated amount you'll receive.</p>
 									</div>
 								</div>
 								<div class="flex gap-3">
-									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-sm">4</div>
+									<div class="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm">4</div>
 									<div>
 										<h4 class="text-base font-semibold text-white mb-1">Confirm Exchange</h4>
 										<p class="text-sm text-slate-400">Review the details and confirm. The exchange will process automatically.</p>
@@ -361,19 +361,19 @@
 							<p class="text-slate-300 mb-4">The Portfolio page shows your total balance across all cryptocurrencies with charts and history.</p>
 							<ul class="space-y-2">
 								<li class="flex items-start gap-2">
-									<ChevronRight size={18} class="text-purple-400 flex-shrink-0 mt-0.5" />
+									<ChevronRight size={18} class="text-cyan-400 flex-shrink-0 mt-0.5" />
 									<div class="text-sm"><strong class="text-white">Total Balance:</strong> <span class="text-slate-400">See your combined USD value</span></div>
 								</li>
 								<li class="flex items-start gap-2">
-									<ChevronRight size={18} class="text-purple-400 flex-shrink-0 mt-0.5" />
+									<ChevronRight size={18} class="text-cyan-400 flex-shrink-0 mt-0.5" />
 									<div class="text-sm"><strong class="text-white">Asset Breakdown:</strong> <span class="text-slate-400">View percentage allocation</span></div>
 								</li>
 								<li class="flex items-start gap-2">
-									<ChevronRight size={18} class="text-purple-400 flex-shrink-0 mt-0.5" />
+									<ChevronRight size={18} class="text-cyan-400 flex-shrink-0 mt-0.5" />
 									<div class="text-sm"><strong class="text-white">Price Charts:</strong> <span class="text-slate-400">Track price movements</span></div>
 								</li>
 								<li class="flex items-start gap-2">
-									<ChevronRight size={18} class="text-purple-400 flex-shrink-0 mt-0.5" />
+									<ChevronRight size={18} class="text-cyan-400 flex-shrink-0 mt-0.5" />
 									<div class="text-sm"><strong class="text-white">Transaction History:</strong> <span class="text-slate-400">See all your transactions</span></div>
 								</li>
 							</ul>
@@ -418,17 +418,17 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Tuffbackup System</h2>
-							<p class="text-slate-300 mb-4">Tuffbackup is DogeGage's encrypted backup system. It's a single file that contains your entire wallet.</p>
+							<p class="text-slate-300 mb-4">Tuffbackup is Rivara's encrypted backup system. It's a single file that contains your entire wallet.</p>
 							
 							<h3 class="text-lg font-semibold text-white mb-2">How It Works</h3>
 							<ul class="space-y-1.5 text-sm text-slate-400 mb-4">
 								<li>• Your wallet is encrypted with your password</li>
-								<li>• The encrypted data is saved to a <code class="text-purple-300">tuffbackup.dogegage</code> file</li>
+								<li>• The encrypted data is saved to a <code class="text-cyan-300">tuffbackup.rivara</code> file</li>
 								<li>• You can restore your wallet by uploading this file and entering your password</li>
 							</ul>
 							
-							<div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-								<p class="text-blue-200 text-sm"><strong>💡 Tip:</strong> Store your Tuffbackup file on a USB drive or external hard drive. Don't rely on it as your only backup - always keep your seed phrase written down too.</p>
+							<div class="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+								<p class="text-cyan-200 text-sm"><strong>💡 Tip:</strong> Store your Tuffbackup file on a USB drive or external hard drive. Don't rely on it as your only backup - always keep your seed phrase written down too.</p>
 							</div>
 						</div>
 					</Card>
@@ -439,7 +439,7 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Auto-Lock Feature</h2>
-							<p class="text-slate-300 mb-4">DogeGage automatically locks your wallet after a period of inactivity to protect your crypto.</p>
+							<p class="text-slate-300 mb-4">Rivara automatically locks your wallet after a period of inactivity to protect your crypto.</p>
 							
 							<h3 class="text-lg font-semibold text-white mb-2">Settings</h3>
 							<ul class="space-y-1.5 text-sm text-slate-400 mb-3">
@@ -458,7 +458,7 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Supported Cryptocurrencies</h2>
-							<p class="text-slate-300 mb-4">DogeGage supports 8 major cryptocurrencies:</p>
+							<p class="text-slate-300 mb-4">Rivara supports 8 major cryptocurrencies:</p>
 							
 							<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 								<div class="p-3 bg-white/5 rounded-lg border border-white/10">
@@ -491,7 +491,7 @@
 								</div>
 								<div class="p-3 bg-white/5 rounded-lg border border-white/10">
 									<h4 class="font-semibold text-white mb-0.5 text-sm">DGAGE</h4>
-									<p class="text-xs text-slate-400">DogeGage native token</p>
+									<p class="text-xs text-slate-400">Rivara native token</p>
 								</div>
 							</div>
 						</div>
@@ -503,10 +503,10 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Standards & Compatibility</h2>
-							<p class="text-slate-300 mb-4">DogeGage uses industry-standard protocols for maximum compatibility.</p>
+							<p class="text-slate-300 mb-4">Rivara uses industry-standard protocols for maximum compatibility.</p>
 							
 							<h3 class="text-lg font-semibold text-white mb-2">BIP39 Seed Phrases</h3>
-							<p class="text-sm text-slate-400 mb-2">DogeGage uses BIP39 standard for seed phrase generation. This means:</p>
+							<p class="text-sm text-slate-400 mb-2">Rivara uses BIP39 standard for seed phrase generation. This means:</p>
 							<ul class="space-y-1.5 text-sm text-slate-400 mb-4">
 								<li>• Your seed phrase works with other BIP39 wallets</li>
 								<li>• You can import wallets from other BIP39-compatible wallets</li>
@@ -514,7 +514,7 @@
 							</ul>
 							
 							<h3 class="text-lg font-semibold text-white mb-2">Derivation Paths</h3>
-							<p class="text-sm text-slate-400 mb-2">DogeGage uses standard derivation paths for each cryptocurrency:</p>
+							<p class="text-sm text-slate-400 mb-2">Rivara uses standard derivation paths for each cryptocurrency:</p>
 							<ul class="space-y-1.5 text-xs text-slate-400 font-mono">
 								<li>• Bitcoin: m/44'/0'/0'/0/0</li>
 								<li>• Ethereum: m/44'/60'/0'/0/0</li>
@@ -530,7 +530,7 @@
 					<Card variant="elevated">
 						<div class="p-6 md:p-8">
 							<h2 class="text-2xl md:text-3xl font-bold text-white mb-3">Privacy & Data</h2>
-							<p class="text-slate-300 mb-4">DogeGage is built with privacy in mind.</p>
+							<p class="text-slate-300 mb-4">Rivara is built with privacy in mind.</p>
 							
 							<h3 class="text-lg font-semibold text-white mb-2">What We DON'T Collect</h3>
 							<ul class="space-y-1.5 text-sm text-slate-400 mb-4">
@@ -547,8 +547,8 @@
 								<li>✅ User preferences (auto-lock settings, etc.)</li>
 							</ul>
 							
-							<div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-								<p class="text-blue-200 text-sm"><strong>💡 Note:</strong> All wallet data is stored locally in your browser. DogeGage servers never see your seed phrase, private keys, or passwords.</p>
+							<div class="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+								<p class="text-cyan-200 text-sm"><strong>💡 Note:</strong> All wallet data is stored locally in your browser. Rivara servers never see your seed phrase, private keys, or passwords.</p>
 							</div>
 						</div>
 					</Card>
@@ -556,7 +556,7 @@
 
 				<!-- Help CTA -->
 				<Card variant="elevated">
-					<div class="p-8 md:p-12 text-center bg-gradient-to-br from-purple-900/20 to-pink-900/20">
+					<div class="p-8 md:p-12 text-center bg-gradient-to-br from-cyan-900/20 to-cyan-900/20">
 						<h2 class="text-2xl md:text-3xl font-bold mb-3">Need More Help?</h2>
 						<p class="text-slate-400 mb-6">Can't find what you're looking for? We're here to help!</p>
 						<div class="flex gap-3 justify-center flex-wrap">

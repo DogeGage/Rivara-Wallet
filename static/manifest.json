@@ -1,11 +1,11 @@
 {
-  "name": "DogeGage Wallet",
-  "short_name": "DogeGage",
+  "name": "Rivara Wallet",
+  "short_name": "Rivara",
   "description": "Non-custodial multi-chain cryptocurrency wallet",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#9333ea",
+  "background_color": "#070b10",
+  "theme_color": "#0891b2",
   "orientation": "portrait-primary",
   "categories": ["finance", "utilities"]
 }

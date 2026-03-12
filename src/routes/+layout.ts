@@ -6,7 +6,7 @@ export const prerender = true;
 export const load = () => {
 	return {
 		meta: {
-			title: 'DogeGage Wallet - Secure Multi-Chain Crypto Wallet',
+			title: 'Rivara Wallet - Secure Multi-Chain Crypto Wallet',
 			description: 'Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tezos, Tron, and Polygon.',
 			keywords: 'crypto wallet, bitcoin, ethereum, dogecoin, multi-chain, non-custodial'
 		}

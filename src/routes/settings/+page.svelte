@@ -132,19 +132,19 @@
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950 flex flex-col">
+<div class="min-h-screen bg-[#070b10] flex flex-col">
 	<!-- Top Nav -->
-	<nav class="flex items-center justify-between px-4 md:px-6 py-4 bg-slate-900/50 backdrop-blur-xl border-b border-white/5">
+	<nav class="flex items-center justify-between px-4 md:px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5">
 		<div class="flex items-center gap-8">
 			<div class="flex items-center gap-2">
 				<span class="text-xl">⬢</span>
-				<span class="font-bold text-white">DogeGage</span>
+				<span class="font-bold text-white">Rivara</span>
 			</div>
 			<div class="hidden md:flex gap-6">
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/wallet')}>Wallets</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/portfolio')}>Portfolio</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/exchange')}>Exchange</button>
-				<button class="text-sm font-semibold text-purple-400 uppercase tracking-wider border-b-2 border-purple-500 pb-1">Settings</button>
+				<button class="text-sm font-semibold text-cyan-400 uppercase tracking-wider border-b-2 border-cyan-500 pb-1">Settings</button>
 			</div>
 		</div>
 		<div class="flex items-center gap-3">
@@ -309,7 +309,7 @@
 						<div class="settings-item">
 							<div class="item-info">
 								<strong>Export Tuffbackup</strong>
-								<span>Download an encrypted .dogegage backup file — protected by your password</span>
+								<span>Download an encrypted .rivara backup file — protected by your password</span>
 							</div>
 							<div class="item-actions">
 								<button class="btn-primary" on:click={initiateBackup}>Export</button>
@@ -336,13 +336,13 @@
 				<!-- ─── Privacy ─── -->
 				{:else if activeTab === 'privacy'}
 					<h2 class="section-title">Privacy</h2>
-					<p class="section-desc">How DogeGage handles your data</p>
+					<p class="section-desc">How Rivara handles your data</p>
 
 					<div class="settings-card">
 						<div class="settings-item">
 							<div class="item-info">
 								<strong>Data Collection</strong>
-								<span>DogeGage collects zero personal data. No analytics, no tracking, no telemetry.</span>
+								<span>Rivara collects zero personal data. No analytics, no tracking, no telemetry.</span>
 							</div>
 							<div class="item-actions">
 								<span class="settings-badge" style="color: #4ade80; border-color: rgba(74, 222, 128, 0.2); background: rgba(74, 222, 128, 0.08);">None</span>
@@ -392,10 +392,10 @@
 						<div class="settings-item">
 							<div class="item-info">
 								<strong>Source Code</strong>
-								<span>Verify everything — DogeGage is fully open source</span>
+								<span>Verify everything — Rivara is fully open source</span>
 							</div>
 							<div class="item-actions">
-								<a href="https://github.com/dominic84p/DogeGage-Wallet" target="_blank" rel="noopener" class="btn-secondary">GitHub ↗</a>
+								<a href="https://github.com/dominic84p/Rivara-Wallet" target="_blank" rel="noopener" class="btn-secondary">GitHub ↗</a>
 							</div>
 						</div>
 					</div>
@@ -419,7 +419,7 @@
 				{/if}
 
 				<!-- Version -->
-				<p class="text-center text-slate-600 text-xs mt-10">DogeGage Wallet v1.0.0-beta</p>
+				<p class="text-center text-slate-600 text-xs mt-10">Rivara Wallet v1.0.0-beta</p>
 			</div>
 		</div>
 	</div>
@@ -428,7 +428,7 @@
 <!-- Seed Phrase Modal -->
 {#if showSeedModal}
 	<div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-		<div class="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-md w-full">
+		<div class="bg-stone-900 border border-white/10 rounded-2xl p-6 max-w-md w-full">
 			<h3 class="text-xl font-bold text-white mb-4">Reveal Seed Phrase</h3>
 			{#if !seedPhrase}
 				<p class="text-sm text-slate-400 mb-4">Enter your password to reveal your seed phrase.</p>
@@ -438,11 +438,11 @@
 					</div>
 				{/if}
 				<input type="password" bind:value={password} placeholder="Enter password"
-					class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none mb-4"
+					class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-4"
 					on:keydown={(e) => e.key === 'Enter' && revealSeed()} />
 				<div class="flex gap-3">
-					<button class="flex-1 px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-700 transition" on:click={() => { showSeedModal = false; password = ''; error = ''; }}>Cancel</button>
-					<button class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-500 hover:to-pink-500 transition shadow-lg shadow-purple-500/25" on:click={revealSeed}>Reveal</button>
+					<button class="flex-1 px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition" on:click={() => { showSeedModal = false; password = ''; error = ''; }}>Cancel</button>
+					<button class="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25" on:click={revealSeed}>Reveal</button>
 				</div>
 			{:else}
 				<div class="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
@@ -451,7 +451,7 @@
 				<div class="p-4 bg-black/20 border border-white/10 rounded-lg mb-4">
 					<p class="text-white font-mono text-sm break-all">{seedPhrase}</p>
 				</div>
-				<button class="w-full px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-700 transition" on:click={() => { showSeedModal = false; seedPhrase = ''; password = ''; error = ''; }}>Close</button>
+				<button class="w-full px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition" on:click={() => { showSeedModal = false; seedPhrase = ''; password = ''; error = ''; }}>Close</button>
 			{/if}
 		</div>
 	</div>
@@ -460,14 +460,14 @@
 <!-- Remove Wallet Modal -->
 {#if showRemoveModal}
 	<div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-		<div class="bg-slate-900 border border-red-500/20 rounded-2xl p-6 max-w-md w-full">
+		<div class="bg-stone-900 border border-red-500/20 rounded-2xl p-6 max-w-md w-full">
 			<h3 class="text-xl font-bold text-white mb-4">Forget Wallet</h3>
 			<p class="text-sm text-slate-400 mb-4">Are you sure? This will delete all wallet data from this device. Make sure you have your seed phrase backed up.</p>
 			<div class="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
 				<p class="text-red-200 text-sm"><strong>⚠️ Warning:</strong> You will lose access to your funds if you don't have your seed phrase!</p>
 			</div>
 			<div class="flex gap-3">
-				<button class="flex-1 px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-700 transition" on:click={() => { showRemoveModal = false; }}>Cancel</button>
+				<button class="flex-1 px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition" on:click={() => { showRemoveModal = false; }}>Cancel</button>
 				<button class="flex-1 px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-500 transition" on:click={removeWallet}>Forget Wallet</button>
 			</div>
 		</div>
@@ -477,7 +477,7 @@
 <!-- Password Modal -->
 {#if showPasswordModal}
 	<div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-		<div class="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-md w-full">
+		<div class="bg-stone-900 border border-white/10 rounded-2xl p-6 max-w-md w-full">
 			<h3 class="text-xl font-bold text-white mb-4">Enter Password</h3>
 			<p class="text-sm text-slate-400 mb-4">Enter your wallet password to create an encrypted backup.</p>
 			{#if error}
@@ -486,11 +486,11 @@
 				</div>
 			{/if}
 			<input type="password" bind:value={password} placeholder="Enter password"
-				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none mb-4"
+				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-4"
 				on:keydown={(e) => e.key === 'Enter' && downloadBackup()} />
 			<div class="flex gap-3">
-				<button class="flex-1 px-4 py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-700 transition" on:click={() => { showPasswordModal = false; password = ''; error = ''; }} disabled={downloading}>Cancel</button>
-				<button class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-500 hover:to-pink-500 transition shadow-lg shadow-purple-500/25 disabled:opacity-50" on:click={downloadBackup} disabled={downloading}>
+				<button class="flex-1 px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition" on:click={() => { showPasswordModal = false; password = ''; error = ''; }} disabled={downloading}>Cancel</button>
+				<button class="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25 disabled:opacity-50" on:click={downloadBackup} disabled={downloading}>
 					{downloading ? 'Downloading...' : 'Download'}
 				</button>
 			</div>
@@ -499,7 +499,7 @@
 {/if}
 
 <!-- Mobile Bottom Nav -->
-<div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
+<div class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
 	<div class="grid grid-cols-4 p-2">
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/wallet')}>
 			<Wallet size={24} /><span class="text-xs">Wallet</span>
@@ -510,7 +510,7 @@
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/exchange')}>
 			<RefreshCw size={24} /><span class="text-xs">Swap</span>
 		</button>
-		<button class="flex flex-col items-center gap-1 py-3 text-purple-400">
+		<button class="flex flex-col items-center gap-1 py-3 text-cyan-400">
 			<Shield size={24} /><span class="text-xs font-medium">Settings</span>
 		</button>
 	</div>
@@ -681,7 +681,7 @@
 	/* ─── Buttons ─── */
 	.btn-primary {
 		padding: 0.625rem 1.5rem;
-		background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+		background: linear-gradient(135deg, #06b6d4 0%, #06b6d4 100%);
 		color: white;
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 10px;
@@ -819,7 +819,7 @@
 	}
 
 	.toggle-switch input:checked + .toggle-slider {
-		background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+		background: linear-gradient(135deg, #06b6d4 0%, #06b6d4 100%);
 		border-color: rgba(255, 255, 255, 0.15);
 		box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
 	}

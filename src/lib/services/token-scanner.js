@@ -23,7 +23,7 @@ class TokenScanner {
                 { address: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619', name: 'Wrapped Ether', symbol: 'WETH' },
                 { address: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', name: 'Wrapped Matic', symbol: 'WMATIC' },
                 { address: '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39', name: 'Chainlink', symbol: 'LINK' },
-                { address: '0x9b359461eddced424e37c1b3d2e54c875a5a319d', name: 'DogeGage Token', symbol: 'DGAGE' }
+                { address: '0x9b359461eddced424e37c1b3d2e54c875a5a319d', name: 'Rivara Token', symbol: 'DGAGE' }
             ]
         };
     }

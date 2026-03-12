@@ -3,16 +3,16 @@
  * Handles Bitcoin, Litecoin, Dogecoin address derivation, balance, and transactions
  */
 
+const WORKER_URL = 'https://api.rivarawallet.xyz';
+
 const CHAIN_CONFIGS = {
 	bitcoin: {
 		name: 'Bitcoin',
 		symbol: 'BTC',
 		coinType: 0,
 		derivationPath: "m/44'/0'/0'/0/0",
-		network: null, // Use default bitcoinjs network
+		network: null,
 		coingeckoId: 'bitcoin',
-		balanceApi: 'https://blockchain.info/q/addressbalance/',
-		txApi: 'https://blockchain.info/rawaddr/',
 		blockchairEndpoint: 'bitcoin',
 		defaultPrice: 95000
 	},
@@ -31,7 +31,6 @@ const CHAIN_CONFIGS = {
 		},
 		coingeckoId: 'litecoin',
 		blockchairEndpoint: 'litecoin',
-		blockcypherEndpoint: 'ltc',
 		defaultPrice: 100
 	},
 	dogecoin: {
@@ -49,7 +48,6 @@ const CHAIN_CONFIGS = {
 		},
 		coingeckoId: 'dogecoin',
 		blockchairEndpoint: 'dogecoin',
-		blockcypherEndpoint: 'doge',
 		defaultPrice: 0.08
 	}
 };
@@ -91,39 +89,12 @@ class UtxoChainService {
 	 */
 	async getBalance(address) {
 		try {
-			// Try Blockchair first
-			if (this.config.blockchairEndpoint) {
-				try {
-					const url = `https://wallet-api.therealdominic84plays.workers.dev/api/blockchair/${this.config.blockchairEndpoint}/${address}`;
-					const response = await fetch(url);
-					const data = await response.json();
-
-					if (data?.data?.[address]?.address?.balance) {
-						const balance = data.data[address].address.balance / 100000000;
-						return balance.toFixed(8);
-					}
-				} catch (err) {
-					console.warn(`Blockchair failed for ${this.chain}:`, err);
-				}
+			const url = `${WORKER_URL}/api/blockchair/${this.config.blockchairEndpoint}/${address}`;
+			const response = await fetch(url);
+			const data = await response.json();
+			if (data?.data?.[address]?.address?.balance !== undefined) {
+				return (data.data[address].address.balance / 100000000).toFixed(8);
 			}
-
-			// Bitcoin-specific fallback
-			if (this.chain === 'bitcoin' && this.config.balanceApi) {
-				const response = await fetch(this.config.balanceApi + address);
-				const satoshis = await response.text();
-				return (parseInt(satoshis) / 100000000).toFixed(8);
-			}
-
-			// BlockCypher fallback for LTC/DOGE
-			if (this.config.blockcypherEndpoint) {
-				const response = await fetch(`https://api.blockcypher.com/v1/${this.config.blockcypherEndpoint}/main/addrs/${address}/balance`);
-				const data = await response.json();
-
-				if (data?.final_balance !== undefined) {
-					return (data.final_balance / 100000000).toFixed(8);
-				}
-			}
-
 			return '0.00000000';
 		} catch (error) {
 			console.error(`Failed to fetch ${this.config.name} balance:`, error);
@@ -138,7 +109,7 @@ class UtxoChainService {
 		const balance = await this.getBalance(address);
 
 		try {
-			const response = await fetch(`https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=${this.config.coingeckoId}`);
+			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/prices?ids=${this.config.coingeckoId}`);
 			const data = await response.json();
 			const price = data[this.config.coingeckoId]?.usd;
 
@@ -166,58 +137,13 @@ class UtxoChainService {
 	 */
 	async getTransactions(address) {
 		try {
-			// Bitcoin-specific API
-			if (this.chain === 'bitcoin' && this.config.txApi) {
-				const response = await fetch(`${this.config.txApi}${address}?limit=10`);
-				const data = await response.json();
-
-				if (data.txs) {
-					return data.txs.map(tx => {
-						const isSent = tx.inputs.some(input => input.prev_out?.addr === address);
-						const value = isSent
-							? tx.inputs.reduce((sum, input) => input.prev_out?.addr === address ? sum + input.prev_out.value : sum, 0)
-							: tx.out.reduce((sum, output) => output.addr === address ? sum + output.value : sum, 0);
-
-						return {
-							hash: tx.hash,
-							value: (value / 100000000).toFixed(8),
-							timestamp: tx.time * 1000,
-							type: isSent ? 'sent' : 'received'
-						};
-					});
-				}
+			const url = `${WORKER_URL}/api/blockchair/${this.config.blockchairEndpoint}/${address}`;
+			const response = await fetch(url);
+			const data = await response.json();
+			const txs = data?.data?.[address]?.transactions;
+			if (txs && txs.length > 0) {
+				return txs.slice(0, 10).map(hash => ({ hash, timestamp: Date.now(), type: 'unknown', value: '0' }));
 			}
-
-			// BlockCypher for LTC/DOGE
-			if (this.config.blockcypherEndpoint) {
-				const response = await fetch(`https://api.blockcypher.com/v1/${this.config.blockcypherEndpoint}/main/addrs/${address}/full?limit=10`);
-				const data = await response.json();
-
-				if (data?.txs) {
-					return data.txs.map(tx => {
-						const isSent = tx.inputs.some(input => input.addresses?.includes(address));
-
-						let value = 0;
-						if (isSent) {
-							value = tx.inputs
-								.filter(input => input.addresses?.includes(address))
-								.reduce((sum, input) => sum + (input.output_value || 0), 0);
-						} else {
-							value = tx.outputs
-								.filter(output => output.addresses?.includes(address))
-								.reduce((sum, output) => sum + (output.value || 0), 0);
-						}
-
-						return {
-							hash: tx.hash,
-							timestamp: new Date(tx.confirmed || tx.received).getTime(),
-							type: isSent ? 'sent' : 'received',
-							value: (value / 100000000).toFixed(8)
-						};
-					});
-				}
-			}
-
 			return [];
 		} catch (error) {
 			console.error(`Failed to fetch ${this.config.name} transactions:`, error);

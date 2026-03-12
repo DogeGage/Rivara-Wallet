@@ -155,11 +155,11 @@
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+<div class="min-h-screen bg-[#070b10] flex items-center justify-center p-4 relative overflow-hidden">
 	<!-- Animated Background -->
 	<div class="absolute inset-0 overflow-hidden">
-		<div class="absolute w-96 h-96 bg-purple-500/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
-		<div class="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style="animation-delay: 1s"></div>
+		<div class="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
+		<div class="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style="animation-delay: 1s"></div>
 	</div>
 
 	<!-- Back Button -->
@@ -173,12 +173,12 @@
 
 	<!-- Main Content -->
 	<div class="relative w-full max-w-md">
-		<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+		<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
 			<!-- Header -->
 			<div class="text-center mb-8">
 				<div class="flex items-center justify-center gap-2 mb-4">
 					<span class="text-3xl">⬢</span>
-					<span class="text-xl font-bold text-white">DogeGage Wallet</span>
+					<span class="text-xl font-bold text-white">Rivara Wallet</span>
 				</div>
 				<h2 class="text-2xl font-bold text-white mb-2">Welcome Back</h2>
 				<p class="text-slate-400">Enter your password to unlock</p>
@@ -194,7 +194,7 @@
 						type="password"
 						bind:value={password}
 						placeholder="Enter your password"
-						class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+						class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 						required
 						autofocus
 						disabled={Date.now() < lockoutUntil}
@@ -215,7 +215,7 @@
 
 				<button 
 					type="submit"
-					class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+					class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 					disabled={loading || Date.now() < lockoutUntil}
 				>
 					{loading ? 'Unlocking...' : 'Unlock Wallet'}

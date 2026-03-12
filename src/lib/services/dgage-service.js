@@ -1,4 +1,4 @@
-// DogeGage Token (DGAGE) Service
+// Rivara Token (DGAGE) Service
 class DGAGEService {
     constructor() {
         this.contractAddress = '0x9b359461EDdCEd424e37c1b3d2e54c875a5a319D';

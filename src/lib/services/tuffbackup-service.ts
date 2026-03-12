@@ -104,7 +104,7 @@ class TuffbackupService {
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `tuffbackup.dogegage`;
+			a.download = `tuffbackup.rivara`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);

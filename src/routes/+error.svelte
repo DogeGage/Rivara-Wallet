@@ -33,10 +33,10 @@
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+<div class="min-h-screen bg-[#070b10] flex items-center justify-center p-6">
 	<div class="max-w-2xl w-full">
 		<!-- Error Card -->
-		<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-12 text-center">
+		<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-12 text-center">
 			<!-- Icon -->
 			<div class="mb-6 flex justify-center">
 				<div class="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
@@ -45,7 +45,7 @@
 			</div>
 
 			<!-- Status Code -->
-			<div class="text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
+			<div class="text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-400 mb-4">
 				{status}
 			</div>
 
@@ -67,14 +67,14 @@
 			<!-- Actions -->
 			<div class="flex flex-col sm:flex-row gap-3 justify-center">
 				<button
-					class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+					class="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2"
 					on:click={() => goto('/')}
 				>
 					<Home size={18} />
 					Go Home
 				</button>
 				<button
-					class="px-6 py-3 bg-slate-800/50 border border-white/10 text-white font-semibold rounded-lg hover:bg-slate-700/50 transition-all flex items-center justify-center gap-2"
+					class="px-6 py-3 bg-stone-800/50 border border-white/10 text-white font-semibold rounded-lg hover:bg-stone-700/50 transition-all flex items-center justify-center gap-2"
 					on:click={() => window.history.back()}
 				>
 					<ArrowLeft size={18} />
@@ -87,7 +87,7 @@
 		<div class="mt-8 text-center">
 			<div class="flex items-center justify-center gap-2 text-slate-500">
 				<span class="text-xl">⬢</span>
-				<span class="font-bold">DogeGage</span>
+				<span class="font-bold">Rivara</span>
 			</div>
 		</div>
 	</div>

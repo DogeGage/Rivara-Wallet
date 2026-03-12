@@ -451,18 +451,18 @@
 	}
 </script>
 
-<div class="min-h-screen bg-slate-950 flex flex-col">
+<div class="min-h-screen bg-[#070b10] flex flex-col">
 	<!-- Top Nav -->
-	<nav class="flex items-center justify-between px-4 md:px-6 py-4 bg-slate-900/50 backdrop-blur-xl border-b border-white/5">
+	<nav class="flex items-center justify-between px-4 md:px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5">
 		<div class="flex items-center gap-8">
 			<div class="flex items-center gap-2">
 				<span class="text-xl">⬢</span>
-				<span class="font-bold text-white">DogeGage</span>
+				<span class="font-bold text-white">Rivara</span>
 			</div>
 			<div class="hidden md:flex gap-6">
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/wallet')}>Wallets</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/portfolio')}>Portfolio</button>
-				<button class="text-sm font-semibold text-purple-400 uppercase tracking-wider border-b-2 border-purple-500 pb-1">Exchange</button>
+				<button class="text-sm font-semibold text-cyan-400 uppercase tracking-wider border-b-2 border-cyan-500 pb-1">Exchange</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/settings')}>Settings</button>
 			</div>
 		</div>
@@ -485,7 +485,7 @@
 				<!-- Exchange Form -->
 				<div class="space-y-6">
 					<!-- From Section -->
-					<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
+					<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
 						<div class="flex items-center justify-between mb-4 flex-wrap gap-1">
 							<h3 class="text-white font-semibold">You Send</h3>
 							<span class="text-xs md:text-sm text-slate-400">{fromCrypto?.balance || '0'} {fromCurrency} available</span>
@@ -494,13 +494,13 @@
 							<input 
 								type="text"
 								inputmode="decimal"
-								class="flex-1 px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white text-lg md:text-xl placeholder-slate-600 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none {error ? 'border-red-500' : ''}"
+								class="flex-1 px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white text-lg md:text-xl placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none {error ? 'border-red-500' : ''}"
 								placeholder="0.00"
 								value={fromAmount}
 								on:input={(e) => updateFromAmount(e.currentTarget.value)}
 							/>
 							<select 
-								class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none w-full sm:w-auto"
+								class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none w-full sm:w-auto"
 								bind:value={fromCurrency}
 								on:change={() => updateFromAmount(fromAmount)}
 							>
@@ -520,7 +520,7 @@
 					<!-- Swap Button -->
 					<div class="flex justify-center">
 						<button 
-							class="p-3 bg-slate-800/50 border border-white/10 rounded-full text-white hover:bg-slate-700/50 transition"
+							class="p-3 bg-stone-800/50 border border-white/10 rounded-full text-white hover:bg-stone-700/50 transition"
 							on:click={swapCurrencies}
 						>
 							<ArrowDownUp size={20} />
@@ -528,7 +528,7 @@
 					</div>
 
 					<!-- To Section -->
-					<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
+					<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
 						<div class="flex items-center justify-between mb-4 flex-wrap gap-1">
 							<h3 class="text-white font-semibold">You Receive</h3>
 							<span class="text-xs md:text-sm text-slate-400 truncate max-w-[200px]">
@@ -544,7 +544,7 @@
 								readonly
 							/>
 							<select 
-								class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none w-full sm:w-auto"
+								class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none w-full sm:w-auto"
 								bind:value={toCurrency}
 								on:change={() => updateFromAmount(fromAmount)}
 							>
@@ -564,7 +564,7 @@
 						{#if customAddress}
 							<input 
 								type="text"
-								class="mt-3 w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+								class="mt-3 w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 								placeholder="Paste {toCurrency} address"
 								bind:value={recipientAddress}
 							/>
@@ -573,7 +573,7 @@
 				</div>
 
 				<!-- Exchange Details Sidebar -->
-				<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 h-fit">
+				<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 h-fit">
 					<h4 class="text-white font-semibold mb-4">Exchange Details</h4>
 					
 					{#if toAmount && fromAmount}
@@ -606,7 +606,7 @@
 					{/if}
 
 					<button 
-						class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={!canExchange}
 						on:click={initiateExchange}
 					>
@@ -629,7 +629,7 @@
 		{:else}
 			<!-- Exchange Status View -->
 			<div class="w-full max-w-3xl">
-				<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-8 shadow-2xl">
+				<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-8 shadow-2xl">
 					<!-- Header -->
 					<div class="text-center mb-6 md:mb-8">
 						<h1 class="text-2xl md:text-3xl font-bold text-white mb-2">Exchange in Progress</h1>
@@ -638,9 +638,9 @@
 
 					<!-- Progress Bar -->
 					<div class="mb-8">
-						<div class="relative h-2 bg-slate-800 rounded-full overflow-hidden mb-6">
+						<div class="relative h-2 bg-stone-800 rounded-full overflow-hidden mb-6">
 							<div 
-								class="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500 ease-out"
+								class="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-600 to-cyan-600 transition-all duration-500 ease-out"
 								style="width: {progress}%"
 							></div>
 						</div>
@@ -652,8 +652,8 @@
 									<div 
 										class="w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center text-base md:text-2xl mb-1 md:mb-2 transition-all duration-300 {
 											index <= currentStepIndex 
-												? 'bg-gradient-to-r from-purple-600 to-pink-600 scale-110' 
-												: 'bg-slate-800'
+												? 'bg-gradient-to-r from-cyan-600 to-cyan-600 scale-110' 
+												: 'bg-stone-800'
 										}"
 									>
 										{step.icon}
@@ -726,7 +726,7 @@
 							</button>
 						{:else}
 							<button 
-								class="w-full py-4 bg-slate-800 border border-white/10 text-white font-medium rounded-xl hover:bg-slate-700 transition-all"
+								class="w-full py-4 bg-stone-800 border border-white/10 text-white font-medium rounded-xl hover:bg-stone-700 transition-all"
 								on:click={handleStress}
 							>
 								😰 Click if stressed
@@ -745,8 +745,8 @@
 				</div>
 
 				<!-- Info Box -->
-				<div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-					<p class="text-blue-200 text-sm text-center">
+				<div class="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
+					<p class="text-cyan-200 text-sm text-center">
 						💡 Exchanges typically take 5-30 minutes depending on network congestion
 					</p>
 				</div>
@@ -761,13 +761,13 @@
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" on:click={closeCatModal}>
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<div class="bg-slate-900 border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl" on:click|stopPropagation>
+		<div class="bg-stone-900 border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl" on:click|stopPropagation>
 			<button class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl" on:click={closeCatModal}>×</button>
 			<h2 class="text-2xl font-bold text-white text-center mb-2">Take a deep breath 🐱</h2>
 			<p class="text-slate-300 text-center mb-4">{catMessage}</p>
 			<img src={catImageUrl} alt="Calming cat" class="w-full rounded-xl mb-4 max-h-64 object-cover" />
 			<button 
-				class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all"
+				class="w-full py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all"
 				on:click={closeCatModal}
 			>
 				I feel better now
@@ -777,7 +777,7 @@
 {/if}
 
 <!-- Mobile Bottom Nav -->
-<div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
+<div class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
 	<div class="grid grid-cols-4 p-2">
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/wallet')}>
 			<Wallet size={24} /><span class="text-xs">Wallet</span>
@@ -785,7 +785,7 @@
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/portfolio')}>
 			<TrendingUp size={24} /><span class="text-xs">Portfolio</span>
 		</button>
-		<button class="flex flex-col items-center gap-1 py-3 text-purple-400">
+		<button class="flex flex-col items-center gap-1 py-3 text-cyan-400">
 			<RefreshCw size={24} /><span class="text-xs font-medium">Swap</span>
 		</button>
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/settings')}>

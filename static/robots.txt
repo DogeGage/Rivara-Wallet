@@ -1,4 +1,4 @@
-# DogeGage Wallet - Robots.txt
+# Rivara Wallet - Robots.txt
 User-agent: *
 Allow: /
 Disallow: /create
@@ -7,4 +7,4 @@ Disallow: /unlock
 Disallow: /settings
 
 # Sitemap
-Sitemap: https://wallet.dogegage.xyz/sitemap.xml
+Sitemap: https://rivarawallet.xyz/sitemap.xml

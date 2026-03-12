@@ -92,7 +92,7 @@ export function convertCurrency(usdAmount: string | number, currency: string, ra
 // Fetch exchange rates
 export async function fetchExchangeRates() {
 	try {
-		const response = await fetch('https://wallet-api.therealdominic84plays.workers.dev/api/rates');
+		const response = await fetch('https://api.rivarawallet.xyz/api/rates');
 		const data = await response.json();
 
 		if (data && data.rates) {

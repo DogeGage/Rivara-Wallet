@@ -4,19 +4,19 @@
 </script>
 
 <svelte:head>
-	<title>Terms of Service — DogeGage Wallet</title>
-	<meta name="description" content="DogeGage Wallet Terms of Service." />
+	<title>Terms of Service — Rivara Wallet</title>
+	<meta name="description" content="Rivara Wallet Terms of Service." />
 </svelte:head>
 
-<div class="min-h-screen bg-slate-950">
+<div class="min-h-screen bg-[#070b10]">
 	<!-- Nav -->
-	<nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-white/10">
+	<nav class="sticky top-0 z-50 bg-stone-900/90 backdrop-blur-lg border-b border-white/10">
 		<div class="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
 			<button class="p-2 text-slate-400 hover:text-white transition rounded-lg hover:bg-white/5" on:click={() => history.back()}>
 				<ArrowLeft size={20} />
 			</button>
 			<div class="flex items-center gap-2">
-				<FileText size={20} class="text-purple-400" />
+				<FileText size={20} class="text-cyan-400" />
 				<h1 class="text-lg font-bold text-white">Terms of Service</h1>
 			</div>
 		</div>
@@ -28,12 +28,12 @@
 		<div class="prose-custom space-y-8">
 			<section>
 				<h2>1. Acceptance of Terms</h2>
-				<p>By using DogeGage Wallet ("the Wallet"), you agree to these Terms of Service. If you do not agree, do not use the Wallet.</p>
+				<p>By using Rivara Wallet ("the Wallet"), you agree to these Terms of Service. If you do not agree, do not use the Wallet.</p>
 			</section>
 
 			<section>
 				<h2>2. Description of Service</h2>
-				<p>DogeGage Wallet is a free, open-source, self-custody cryptocurrency wallet. It allows you to generate, store, and manage cryptocurrency wallets for supported blockchains. The Wallet runs entirely in your web browser — your private keys never leave your device.</p>
+				<p>Rivara Wallet is a free, open-source, self-custody cryptocurrency wallet. It allows you to generate, store, and manage cryptocurrency wallets for supported blockchains. The Wallet runs entirely in your web browser — your private keys never leave your device.</p>
 			</section>
 
 			<section>
@@ -61,7 +61,7 @@
 
 			<section>
 				<h2>5. Limitation of Liability</h2>
-				<p>To the maximum extent permitted by law, DogeGage Wallet and its contributors shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from:</p>
+				<p>To the maximum extent permitted by law, Rivara Wallet and its contributors shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from:</p>
 				<ul>
 					<li>Your use or inability to use the Wallet</li>
 					<li>Loss of funds due to lost seed phrases or passwords</li>
@@ -78,7 +78,7 @@
 
 			<section>
 				<h2>7. Open Source</h2>
-				<p>DogeGage Wallet is open-source software available on <a href="https://github.com/dominic84p/DogeGage-Wallet" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 underline underline-offset-2">GitHub</a>. You are free to review, fork, and modify the code subject to its license.</p>
+				<p>Rivara Wallet is open-source software available on <a href="https://github.com/dominic84p/Rivara-Wallet" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300 underline underline-offset-2">GitHub</a>. You are free to review, fork, and modify the code subject to its license.</p>
 			</section>
 
 			<section>
@@ -88,7 +88,7 @@
 
 			<section>
 				<h2>9. Contact</h2>
-				<p>Questions about these terms? Open an issue on our <a href="https://github.com/dominic84p/DogeGage-Wallet/issues" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 underline underline-offset-2">GitHub repository</a>.</p>
+				<p>Questions about these terms? Open an issue on our <a href="https://github.com/dominic84p/Rivara-Wallet/issues" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300 underline underline-offset-2">GitHub repository</a>.</p>
 			</section>
 		</div>
 

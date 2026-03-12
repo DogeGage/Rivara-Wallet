@@ -52,7 +52,7 @@
 		
 		if (score <= 2) return { score, label: 'Weak', color: 'bg-red-500' };
 		if (score <= 4) return { score, label: 'Fair', color: 'bg-yellow-500' };
-		if (score <= 5) return { score, label: 'Strong', color: 'bg-blue-500' };
+		if (score <= 5) return { score, label: 'Strong', color: 'bg-cyan-500' };
 		return { score, label: 'Very Strong', color: 'bg-green-500' };
 	}
 
@@ -201,11 +201,11 @@
 	$: mnemonicWords = generatedMnemonic ? generatedMnemonic.split(' ') : [];
 </script>
 
-<div class="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+<div class="min-h-screen bg-[#070b10] flex items-center justify-center p-4 relative overflow-hidden">
 	<!-- Animated Background -->
 	<div class="absolute inset-0 overflow-hidden">
-		<div class="absolute w-96 h-96 bg-purple-500/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
-		<div class="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style="animation-delay: 1s"></div>
+		<div class="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
+		<div class="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style="animation-delay: 1s"></div>
 	</div>
 
 	<!-- Back Button -->
@@ -219,13 +219,13 @@
 
 	<!-- Main Content -->
 	<div class="relative w-full max-w-2xl">
-		<div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+		<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
 			{#if step === 1}
 				<!-- Step 1: Set Password -->
 				<div class="text-center mb-8">
 					<div class="flex items-center justify-center gap-2 mb-4">
 						<span class="text-3xl">⬢</span>
-						<span class="text-xl font-bold text-white">DogeGage Wallet</span>
+						<span class="text-xl font-bold text-white">Rivara Wallet</span>
 					</div>
 					<h2 class="text-2xl font-bold text-white mb-2">Create New Wallet</h2>
 					<p class="text-slate-400">Generate a new wallet with a secure seed phrase</p>
@@ -251,7 +251,7 @@
 							placeholder="Create a strong password (min 12 chars)"
 							minlength="12"
 							autocomplete="new-password"
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 							required
 							autofocus
 						/>
@@ -260,7 +260,7 @@
 							<div class="mt-2">
 								<div class="flex gap-1 mb-1">
 									{#each [1,2,3,4,5,6] as i}
-										<div class="h-1 flex-1 rounded-full {i <= passwordStrength.score ? passwordStrength.color : 'bg-slate-700'}"></div>
+										<div class="h-1 flex-1 rounded-full {i <= passwordStrength.score ? passwordStrength.color : 'bg-stone-700'}"></div>
 									{/each}
 								</div>
 								<p class="text-xs {passwordStrength.score <= 2 ? 'text-red-400' : passwordStrength.score <= 4 ? 'text-yellow-400' : 'text-green-400'}">
@@ -281,7 +281,7 @@
 							placeholder="Confirm your password"
 							minlength="12"
 							autocomplete="new-password"
-							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+							class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 							required
 						/>
 					</div>
@@ -294,7 +294,7 @@
 
 					<button 
 						type="submit"
-						class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={loading}
 					>
 						{loading ? 'Generating...' : 'Generate Wallet'}
@@ -302,7 +302,7 @@
 				</form>
 
 				<div class="mt-6 text-center text-sm text-slate-400">
-					Already have a wallet? <button class="text-purple-400 hover:underline" on:click={() => goto('/import')}>Import Wallet</button>
+					Already have a wallet? <button class="text-cyan-400 hover:underline" on:click={() => goto('/import')}>Import Wallet</button>
 				</div>
 
 			{:else if step === 2}
@@ -310,7 +310,7 @@
 				<div class="text-center mb-8">
 					<div class="flex items-center justify-center gap-2 mb-4">
 						<span class="text-3xl">⬢</span>
-						<span class="text-xl font-bold text-white">DogeGage Wallet</span>
+						<span class="text-xl font-bold text-white">Rivara Wallet</span>
 					</div>
 					<h2 class="text-2xl font-bold text-white mb-2">Your Seed Phrase</h2>
 					<p class="text-slate-400">Write this down and keep it safe!</p>
@@ -336,7 +336,7 @@
 				</div>
 
 				<button 
-					class="w-full py-3 mb-4 bg-slate-800/50 border border-white/10 text-white font-medium rounded-xl hover:bg-slate-700/50 transition-all flex items-center justify-center gap-2"
+					class="w-full py-3 mb-4 bg-stone-800/50 border border-white/10 text-white font-medium rounded-xl hover:bg-stone-700/50 transition-all flex items-center justify-center gap-2"
 					on:click={copySeed}
 				>
 					{#if copied}
@@ -349,7 +349,7 @@
 				</button>
 
 				<button 
-					class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25"
+					class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25"
 					on:click={continueToVerify}
 				>
 					I've Written It Down →
@@ -360,14 +360,14 @@
 				<div class="text-center mb-8">
 					<div class="flex items-center justify-center gap-2 mb-4">
 						<span class="text-3xl">⬢</span>
-						<span class="text-xl font-bold text-white">DogeGage Wallet</span>
+						<span class="text-xl font-bold text-white">Rivara Wallet</span>
 					</div>
 					<h2 class="text-2xl font-bold text-white mb-2">Verify Seed Phrase</h2>
 					<p class="text-slate-400">Fill in the missing words to verify you wrote it down</p>
 				</div>
 
-				<div class="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
-					<p class="text-sm text-blue-200">
+				<div class="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-center">
+					<p class="text-sm text-cyan-200">
 						Enter words #{verifyIndices.map(i => i + 1).join(', ')} from your seed phrase
 					</p>
 				</div>
@@ -382,7 +382,7 @@
 								type="text"
 								bind:value={verifyInputs[i]}
 								placeholder="Enter word #{idx + 1}"
-								class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+								class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 								autocomplete="off"
 								autocapitalize="off"
 								spellcheck="false"
@@ -398,7 +398,7 @@
 				{/if}
 
 				<button 
-					class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+					class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 					on:click={verifyAndCreate}
 					disabled={verifyInputs.some(w => !w.trim()) || loading}
 				>

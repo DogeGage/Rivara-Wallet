@@ -70,7 +70,7 @@ async function fetchUtxos(chain, address) {
 
 	// Try Blockchair first
 	try {
-		const url = `https://wallet-api.therealdominic84plays.workers.dev/api/blockchair/${config.apiEndpoint}/${address}`;
+		const url = `https://api.rivarawallet.xyz/api/blockchair/${config.apiEndpoint}/${address}`;
 		const response = await fetch(url);
 		const data = await response.json();
 
@@ -162,7 +162,7 @@ async function broadcastTransaction(chain, txHex) {
 
 	// Try Blockchair first
 	try {
-		const url = `https://wallet-api.therealdominic84plays.workers.dev/api/blockchair/${config.apiEndpoint}/broadcast`;
+		const url = `https://api.rivarawallet.xyz/api/blockchair/${config.apiEndpoint}/broadcast`;
 		const response = await fetch(url, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },

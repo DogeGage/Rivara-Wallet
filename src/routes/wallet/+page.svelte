@@ -153,23 +153,23 @@
 </script>
 
 
-<div class="flex flex-col h-screen bg-slate-950">
+<div class="flex flex-col h-screen bg-[#070b10]">
 	<!-- Top Nav -->
-	<nav class="flex items-center justify-between px-6 py-4 bg-slate-900/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
+	<nav class="flex items-center justify-between px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
 		<div class="flex items-center gap-8">
 			<div class="flex items-center gap-2">
 				<span class="text-xl">⬢</span>
-				<span class="font-bold text-white">DogeGage</span>
+				<span class="font-bold text-white">Rivara</span>
 			</div>
 			<div class="hidden md:flex gap-6">
-				<button class="text-sm font-semibold text-purple-400 uppercase tracking-wider border-b-2 border-purple-500 pb-1">Wallets</button>
+				<button class="text-sm font-semibold text-cyan-400 uppercase tracking-wider border-b-2 border-cyan-500 pb-1">Wallets</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/portfolio')}>Portfolio</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/exchange')}>Exchange</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/settings')}>Settings</button>
 			</div>
 		</div>
 		<div class="flex items-center gap-3">
-			<select class="px-3 py-1.5 bg-slate-800/50 border border-white/10 rounded-lg text-sm text-white" value={currentCurrency} on:change={changeCurrency}>
+			<select class="px-3 py-1.5 bg-stone-800/50 border border-white/10 rounded-lg text-sm text-white" value={currentCurrency} on:change={changeCurrency}>
 				<option value="usd">USD</option>
 				<option value="cad">CAD</option>
 				<option value="eur">EUR</option>
@@ -190,7 +190,7 @@
 
 	<div class="flex flex-1 overflow-hidden">
 		<!-- Left Sidebar -->
-		<aside class="w-80 bg-slate-900/30 backdrop-blur-xl border-r border-white/5 flex flex-col max-md:w-full max-md:border-r-0 {selectedAsset ? 'max-md:hidden' : ''}">
+		<aside class="w-80 bg-stone-900/30 backdrop-blur-xl border-r border-white/5 flex flex-col max-md:w-full max-md:border-r-0 {selectedAsset ? 'max-md:hidden' : ''}">
 			<!-- Balance Header -->
 			<div class="p-6 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
 				<div class="text-3xl font-extrabold text-white mb-1 tracking-tight">
@@ -232,7 +232,7 @@
 							<div class="bg-black/20 border-t border-white/5">
 								{#each group.assets as asset}
 									<button 
-										class="w-full flex items-center gap-2.5 px-3 py-2.5 pl-11 border-b border-white/[0.02] last:border-b-0 transition-all hover:bg-white/5 {selectedCrypto === asset.symbol ? 'bg-purple-500/15 border-l-3 !border-l-purple-500' : ''}"
+										class="w-full flex items-center gap-2.5 px-3 py-2.5 pl-11 border-b border-white/[0.02] last:border-b-0 transition-all hover:bg-white/5 {selectedCrypto === asset.symbol ? 'bg-cyan-500/15 border-l-3 !border-l-cyan-500' : ''}"
 										on:click={() => selectAsset(asset.symbol)}
 									>
 										<img src={asset.icon} alt={asset.name} class="w-7 h-7" />
@@ -272,14 +272,14 @@
 						<h1 class="text-3xl font-extrabold text-white tracking-tight">{selectedAsset.name}</h1>
 						<div class="flex gap-2.5">
 							<button 
-								class="px-5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm font-medium transition-all hover:bg-white/10 {!showingSend ? 'bg-purple-600 border-purple-500' : ''}"
+								class="px-5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm font-medium transition-all hover:bg-white/10 {!showingSend ? 'bg-cyan-600 border-cyan-500' : ''}"
 								on:click={showReceive}
 							>
 								<ArrowDownToLine size={16} class="inline mr-1.5" />
 								Receive
 							</button>
 							<button 
-								class="px-5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm font-medium transition-all hover:bg-white/10 {showingSend ? 'bg-purple-600 border-purple-500' : ''}"
+								class="px-5 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm font-medium transition-all hover:bg-white/10 {showingSend ? 'bg-cyan-600 border-cyan-500' : ''}"
 								on:click={showSend}
 							>
 								<Send size={16} class="inline mr-1.5" />
@@ -321,9 +321,9 @@
 							<div class="flex items-center justify-between mb-5">
 								<h2 class="text-lg font-bold text-white">Price Chart</h2>
 								<div class="flex gap-1.5">
-									<button class="px-2.5 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-md">24H</button>
-									<button class="px-2.5 py-1.5 bg-slate-800/50 text-slate-400 text-xs font-medium rounded-md hover:bg-slate-700 transition">7D</button>
-									<button class="px-2.5 py-1.5 bg-slate-800/50 text-slate-400 text-xs font-medium rounded-md hover:bg-slate-700 transition">30D</button>
+									<button class="px-2.5 py-1.5 bg-cyan-600 text-white text-xs font-medium rounded-md">24H</button>
+									<button class="px-2.5 py-1.5 bg-stone-800/50 text-slate-400 text-xs font-medium rounded-md hover:bg-stone-700 transition">7D</button>
+									<button class="px-2.5 py-1.5 bg-stone-800/50 text-slate-400 text-xs font-medium rounded-md hover:bg-stone-700 transition">30D</button>
 								</div>
 							</div>
 							<div class="h-40 flex items-center justify-center text-slate-500 text-sm">
@@ -347,7 +347,7 @@
 									<input 
 										type="text" 
 										placeholder="Enter {selectedAsset.symbol} address" 
-										class="w-full px-4 py-3.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+										class="w-full px-4 py-3.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 									/>
 								</div>
 
@@ -358,13 +358,13 @@
 											type="number" 
 											placeholder="0.00" 
 											step="any"
-											class="w-full px-4 py-3.5 pr-20 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-purple-500 focus:bg-black/40 focus:ring-4 focus:ring-purple-500/15 transition-all outline-none"
+											class="w-full px-4 py-3.5 pr-20 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 										/>
 										<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-sm">{selectedAsset.symbol}</span>
 									</div>
 									<div class="flex items-center justify-between mt-2 text-sm text-slate-500">
 										<span>Available: {selectedAsset.balance} {selectedAsset.symbol}</span>
-										<button class="px-2.5 py-1 border border-purple-500/50 text-purple-400 rounded-md hover:bg-purple-500/10 transition font-medium text-xs">MAX</button>
+										<button class="px-2.5 py-1 border border-cyan-500/50 text-cyan-400 rounded-md hover:bg-cyan-500/10 transition font-medium text-xs">MAX</button>
 									</div>
 								</div>
 
@@ -386,7 +386,7 @@
 									</div>
 								</div>
 
-								<button class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/25">
+								<button class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25">
 									Review Transaction
 								</button>
 							</div>
@@ -407,9 +407,9 @@
 </div>
 
 <!-- Mobile Bottom Nav -->
-<div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
+<div class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
 	<div class="grid grid-cols-4 p-2">
-		<button class="flex flex-col items-center gap-1 py-3 text-purple-400">
+		<button class="flex flex-col items-center gap-1 py-3 text-cyan-400">
 			<Wallet size={24} /><span class="text-xs font-medium">Wallet</span>
 		</button>
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/portfolio')}>

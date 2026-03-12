@@ -9,12 +9,12 @@
 		base: 'rounded-2xl overflow-hidden transition-all duration-200',
 		variants: {
 			variant: {
-				elevated: 'bg-slate-800/40 backdrop-blur-sm border border-white/10 shadow-lg',
+				elevated: 'bg-stone-800/40 backdrop-blur-sm border border-white/10 shadow-lg',
 				bordered: 'bg-transparent border-2 border-white/10',
-				flat: 'bg-slate-800/20'
+				flat: 'bg-stone-800/20'
 			},
 			hoverable: {
-				true: 'hover:border-purple-500/30 hover:-translate-y-1 cursor-pointer'
+				true: 'hover:border-cyan-500/30 hover:-translate-y-1 cursor-pointer'
 			},
 			pressable: {
 				true: 'active:scale-95 cursor-pointer'

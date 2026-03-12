@@ -46,23 +46,23 @@
 	}
 </script>
 
-<div class="flex flex-col h-screen bg-slate-950">
+<div class="flex flex-col h-screen bg-[#070b10]">
 	<!-- Top Nav -->
-	<nav class="flex items-center justify-between px-6 py-4 bg-slate-900/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
+	<nav class="flex items-center justify-between px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
 		<div class="flex items-center gap-8">
 			<div class="flex items-center gap-2">
 				<span class="text-xl">⬢</span>
-				<span class="font-bold text-white">DogeGage</span>
+				<span class="font-bold text-white">Rivara</span>
 			</div>
 			<div class="hidden md:flex gap-6">
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/wallet')}>Wallets</button>
-				<button class="text-sm font-semibold text-purple-400 uppercase tracking-wider border-b-2 border-purple-500 pb-1">Portfolio</button>
+				<button class="text-sm font-semibold text-cyan-400 uppercase tracking-wider border-b-2 border-cyan-500 pb-1">Portfolio</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/exchange')}>Exchange</button>
 				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/settings')}>Settings</button>
 			</div>
 		</div>
 		<div class="flex items-center gap-3">
-			<select class="px-3 py-1.5 bg-slate-800/50 border border-white/10 rounded-lg text-sm text-white">
+			<select class="px-3 py-1.5 bg-stone-800/50 border border-white/10 rounded-lg text-sm text-white">
 				<option>USD</option>
 				<option>CAD</option>
 				<option>EUR</option>
@@ -115,27 +115,27 @@
 						<h2 class="text-xl font-bold text-white">Portfolio Performance</h2>
 						<div class="flex gap-2 flex-wrap">
 							<button 
-								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '24H' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}"
+								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '24H' ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
 								on:click={() => changeTimeframe('24H')}
 							>24H</button>
 							<button 
-								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '7D' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}"
+								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '7D' ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
 								on:click={() => changeTimeframe('7D')}
 							>7D</button>
 							<button 
-								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '1M' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}"
+								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '1M' ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
 								on:click={() => changeTimeframe('1M')}
 							>1M</button>
 							<button 
-								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '3M' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}"
+								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '3M' ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
 								on:click={() => changeTimeframe('3M')}
 							>3M</button>
 							<button 
-								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '1Y' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}"
+								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === '1Y' ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
 								on:click={() => changeTimeframe('1Y')}
 							>1Y</button>
 							<button 
-								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === 'Max' ? 'bg-purple-600 text-white' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'}"
+								class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {currentTimeframe === 'Max' ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
 								on:click={() => changeTimeframe('Max')}
 							>Max</button>
 						</div>
@@ -155,12 +155,12 @@
 </div>
 
 <!-- Mobile Bottom Nav -->
-<div class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
+<div class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
 	<div class="grid grid-cols-4 p-2">
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/wallet')}>
 			<Wallet size={24} /><span class="text-xs">Wallet</span>
 		</button>
-		<button class="flex flex-col items-center gap-1 py-3 text-purple-400">
+		<button class="flex flex-col items-center gap-1 py-3 text-cyan-400">
 			<TrendingUp size={24} /><span class="text-xs font-medium">Portfolio</span>
 		</button>
 		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/exchange')}>

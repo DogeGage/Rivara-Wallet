@@ -1,8 +1,8 @@
 /**
- * DogeGage Wallet
- * Copyright (c) 2024-2026 DogeGage
+ * Rivara Wallet
+ * Copyright (c) 2024-2026 Rivara
  * Source Available License - See LICENSE file
- * https://github.com/dominic84p/DogeGage-Wallet
+ * https://github.com/dominic84p/Rivara-Wallet
  */
 
 // Tron Service - Handle TRX balance and address derivation
@@ -43,7 +43,7 @@ class TronService {
 
         // Get TRX price from CoinGecko via worker
         try {
-            const response = await fetch('https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=tron');
+            const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=tron');
             const data = await response.json();
             const trxPrice = data.tron?.usd || 0;
 

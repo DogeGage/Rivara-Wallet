@@ -4,19 +4,19 @@
 </script>
 
 <svelte:head>
-	<title>Privacy Policy — DogeGage Wallet</title>
-	<meta name="description" content="DogeGage Wallet Privacy Policy. Zero tracking, zero analytics, zero data collection." />
+	<title>Privacy Policy — Rivara Wallet</title>
+	<meta name="description" content="Rivara Wallet Privacy Policy. Zero tracking, zero analytics, zero data collection." />
 </svelte:head>
 
-<div class="min-h-screen bg-slate-950">
+<div class="min-h-screen bg-[#070b10]">
 	<!-- Nav -->
-	<nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-lg border-b border-white/10">
+	<nav class="sticky top-0 z-50 bg-stone-900/90 backdrop-blur-lg border-b border-white/10">
 		<div class="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
 			<button class="p-2 text-slate-400 hover:text-white transition rounded-lg hover:bg-white/5" on:click={() => history.back()}>
 				<ArrowLeft size={20} />
 			</button>
 			<div class="flex items-center gap-2">
-				<Shield size={20} class="text-purple-400" />
+				<Shield size={20} class="text-cyan-400" />
 				<h1 class="text-lg font-bold text-white">Privacy Policy</h1>
 			</div>
 		</div>
@@ -28,7 +28,7 @@
 		<div class="prose-custom space-y-8">
 			<section>
 				<h2>Our Promise</h2>
-				<p>DogeGage Wallet is built on a simple principle: <strong>your crypto is your business</strong>. We do not collect, store, transmit, or sell any personal data. Period.</p>
+				<p>Rivara Wallet is built on a simple principle: <strong>your crypto is your business</strong>. We do not collect, store, transmit, or sell any personal data. Period.</p>
 			</section>
 
 			<section>
@@ -68,12 +68,12 @@
 
 			<section>
 				<h2>Open Source</h2>
-				<p>DogeGage Wallet is open source. You can verify everything we've stated above by reviewing the <a href="https://github.com/dominic84p/DogeGage-Wallet" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 underline underline-offset-2">source code on GitHub</a>.</p>
+				<p>Rivara Wallet is open source. You can verify everything we've stated above by reviewing the <a href="https://github.com/dominic84p/Rivara-Wallet" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300 underline underline-offset-2">source code on GitHub</a>.</p>
 			</section>
 
 			<section>
 				<h2>Contact</h2>
-				<p>Questions about this policy? Open an issue on our <a href="https://github.com/dominic84p/DogeGage-Wallet/issues" target="_blank" rel="noopener" class="text-purple-400 hover:text-purple-300 underline underline-offset-2">GitHub repository</a>.</p>
+				<p>Questions about this policy? Open an issue on our <a href="https://github.com/dominic84p/Rivara-Wallet/issues" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300 underline underline-offset-2">GitHub repository</a>.</p>
 			</section>
 		</div>
 

@@ -1,15 +1,15 @@
 /**
- * DogeGage Wallet - Desktop Edition
- * Copyright (c) 2024-2026 DogeGage
+ * Rivara Wallet - Desktop Edition
+ * Copyright (c) 2024-2026 Rivara
  * Source Available License - See LICENSE file
- * https://github.com/dominic84p/DogeGage-Wallet
+ * https://github.com/dominic84p/Rivara-Wallet
  */
 
 // Passkey Service - WebAuthn support for wallet unlocking
 class PasskeyService {
     
     constructor() {
-        this.rpName = 'DogeGage Wallet';
+        this.rpName = 'Rivara Wallet';
         // Don't set rpId - let browser use the origin automatically
         this.rpId = undefined;
     }
@@ -70,7 +70,7 @@ class PasskeyService {
                 user: {
                     id: new TextEncoder().encode(userId),
                     name: userId,
-                    displayName: 'DogeGage User'
+                    displayName: 'Rivara User'
                 },
                 pubKeyCredParams: [
                     { alg: -7, type: 'public-key' },  // ES256
@@ -234,7 +234,7 @@ class PasskeyService {
             ['deriveBits', 'deriveKey']
         );
         
-        const salt = new TextEncoder().encode('dogegage-passkey-salt');
+        const salt = new TextEncoder().encode('rivara-passkey-salt');
         
         return await crypto.subtle.deriveKey(
             {

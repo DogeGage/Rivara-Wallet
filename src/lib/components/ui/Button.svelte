@@ -42,7 +42,7 @@
 			{
 				variant: 'solid',
 				color: 'primary',
-				class: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-0.5 focus:ring-purple-500'
+				class: 'bg-gradient-to-r from-cyan-600 to-cyan-600 text-white hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 focus:ring-cyan-500'
 			},
 			{
 				variant: 'solid',
@@ -52,7 +52,7 @@
 			{
 				variant: 'bordered',
 				color: 'primary',
-				class: 'border-purple-500 text-purple-400 hover:bg-purple-500/10 focus:ring-purple-500'
+				class: 'border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 focus:ring-cyan-500'
 			},
 			{
 				variant: 'flat',

@@ -1,16 +1,14 @@
 /**
- * DogeGage Wallet
- * Copyright (c) 2024-2026 DogeGage
+ * Rivara Wallet
+ * Copyright (c) 2024-2026 Rivara
  * Source Available License - See LICENSE file
- * https://github.com/dominic84p/DogeGage-Wallet
+ * https://github.com/dominic84p/Rivara-Wallet
  */
 
 // Solana Service - Handle SOL balance and address derivation
 class SolanaService {
     constructor() {
-        // Helius API key
-        this.heliusApiKey = '5ac9b25a-b6e1-4157-9723-3dfe6eef1723';
-        this.rpcEndpoint = `https://mainnet.helius-rpc.com/?api-key=${this.heliusApiKey}`;
+        this.rpcEndpoint = 'https://api.rivarawallet.xyz/api/solana/rpc';
         this.cachedPrice = 150; // Default fallback
     }
 
@@ -54,7 +52,7 @@ class SolanaService {
 
             // Get SOL price from CoinGecko via worker
             try {
-                const response = await fetch('https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=solana');
+                const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=solana');
                 const data = await response.json();
 
                 if (data.solana && data.solana.usd && data.solana.usd > 0) {

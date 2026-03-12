@@ -1,8 +1,8 @@
 /**
- * DogeGage Wallet
- * Copyright (c) 2024-2026 DogeGage
+ * Rivara Wallet
+ * Copyright (c) 2024-2026 Rivara
  * Source Available License - See LICENSE file
- * https://github.com/dominic84p/DogeGage-Wallet
+ * https://github.com/dominic84p/Rivara-Wallet
  */
 
 // Wallet Service - Manages wallet state and crypto operations
@@ -161,7 +161,7 @@ class WalletService {
         // Fetch all prices upfront in one call
         let prices = {};
         try {
-            const priceRes = await fetch('https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=bitcoin,ethereum,dogecoin,litecoin,solana,tezos,tron,matic-network');
+            const priceRes = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=bitcoin,ethereum,dogecoin,litecoin,solana,tezos,tron,matic-network');
             prices = await priceRes.json();
             console.log('Prices fetched:', prices);
         } catch (e) {
@@ -452,7 +452,7 @@ class WalletService {
 
     async getDogePrice() {
         try {
-            const response = await fetch('https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=dogecoin');
+            const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=dogecoin');
             const data = await response.json();
             return data.dogecoin?.usd || 0.35; // Fallback price
         } catch (error) {
@@ -463,7 +463,7 @@ class WalletService {
 
     async getLtcPrice() {
         try {
-            const response = await fetch('https://wallet-api.therealdominic84plays.workers.dev/api/coingecko/prices?ids=litecoin');
+            const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=litecoin');
             const data = await response.json();
             return data.litecoin?.usd || 100; // Fallback price
         } catch (error) {

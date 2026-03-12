@@ -11,7 +11,7 @@
 	export let size: 'sm' | 'md' | 'lg' = 'md';
 
 	const input = tv({
-		base: 'bg-black/20 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all',
+		base: 'bg-black/20 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all',
 		variants: {
 			size: {
 				sm: 'px-3 py-2 text-sm',
