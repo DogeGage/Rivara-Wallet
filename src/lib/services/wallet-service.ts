@@ -6,6 +6,8 @@ import { SolanaService } from './solana-service.js';
 import { TezosService } from './tezos-service.js';
 import { TronService } from './tron-service.js';
 import { DGAGEService } from './dgage-service.js';
+// @ts-ignore - JS module
+import { TokenScanner } from './token-scanner.js';
 
 // SECURITY: HMAC key for cached balance integrity (generated per-session)
 let _sessionHmacKey: CryptoKey | null = null;
@@ -38,9 +40,67 @@ async function verifyHmac(data: string, hmac: string): Promise<boolean> {
 
 class WalletService {
 	private isFetching = false;
+	private tokenScanner: any;
 
 	constructor() {
-		// Services imported as ES modules — no window globals needed
+		this.tokenScanner = new TokenScanner();
+	}
+
+	/**
+	 * Fetch EVM chain balances (ETH, Polygon) via backend worker that proxies Ankr Advanced API.
+	 * This keeps API keys server-side and falls back to per-chain providers in the caller if it fails.
+	 */
+	private async getEvmBalancesFromAnkr(evmAddress: string): Promise<{
+		ethereum?: { balance: string; balanceUSD: string };
+		polygon?: { balance: string; balanceUSD: string };
+	}> {
+		const response = await fetch('https://api.rivarawallet.xyz/api/ankr/scan', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				walletAddress: evmAddress,
+				blockchains: ['eth', 'polygon']
+			})
+		});
+
+		if (!response.ok) {
+			throw new Error(`Ankr balance request failed with status ${response.status}`);
+		}
+
+		const json = await response.json();
+		const assets = json?.assets;
+		if (!Array.isArray(assets)) {
+			throw new Error('Invalid Ankr balance response');
+		}
+
+		const result: {
+			ethereum?: { balance: string; balanceUSD: string };
+			polygon?: { balance: string; balanceUSD: string };
+		} = {};
+
+		for (const asset of assets) {
+			if (!asset) continue;
+			const blockchain = asset.blockchain as string | undefined;
+			const isNative = !asset.contractAddress;
+			if (!isNative || !blockchain) continue;
+
+			const balance = Number(asset.balance ?? 0);
+			const balanceUsd = Number(asset.balanceUsd ?? 0);
+
+			if (blockchain === 'eth') {
+				result.ethereum = {
+					balance: balance.toFixed(4),
+					balanceUSD: balanceUsd.toFixed(2)
+				};
+			} else if (blockchain === 'polygon') {
+				result.polygon = {
+					balance: balance.toFixed(4),
+					balanceUSD: balanceUsd.toFixed(2)
+				};
+			}
+		}
+
+		return result;
 	}
 
 	async importFromSeed(mnemonic: string) {
@@ -157,6 +217,21 @@ class WalletService {
 		balancesLoading.set(true);
 
 		try {
+			// Prefer a single Ankr Advanced API call for EVM balances where possible
+			let ankrEvmBalances:
+				| {
+						ethereum?: { balance: string; balanceUSD: string };
+						polygon?: { balance: string; balanceUSD: string };
+				  }
+				| null = null;
+			try {
+				if (currentWallet.ethereum?.address) {
+					ankrEvmBalances = await this.getEvmBalancesFromAnkr(currentWallet.ethereum.address);
+				}
+			} catch {
+				ankrEvmBalances = null;
+			}
+
 			// Instantiate via ES module imports
 			const bitcoinService = new BitcoinService();
 			const dogecoinService = new DogecoinService();
@@ -168,35 +243,84 @@ class WalletService {
 			const tronService = new TronService();
 			const dgageService = new DGAGEService();
 
-			// Fetch all balances in parallel
-			const [btcBalance, dogeBalance, ltcBalance, ethBalance, polBalance, solBalance, xtzBalance, trxBalance, dgageBalance] = await Promise.all([
-				bitcoinService.getBalanceUSD(currentWallet.bitcoin.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				dogecoinService.getBalanceUSD(currentWallet.dogecoin.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				litecoinService.getBalanceUSD(currentWallet.litecoin.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				ethereumService.getBalanceUSD(currentWallet.ethereum.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				polygonService.getBalanceUSD(currentWallet.polygon.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				solanaService.getBalanceUSD(currentWallet.solana.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				tezosService.getBalanceUSD(currentWallet.tezos.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				tronService.getBalanceUSD(currentWallet.tron.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; }),
-				dgageService.getBalanceUSD(currentWallet.dgage.address).catch((e: any) => { return { balance: '0', balanceUSD: '0' }; })
-			]);
+			// Helper: update a single chain as soon as its balance resolves
+			const tasks: Promise<void>[] = [];
 
-			// Update wallet with new balances
-			const updatedWallet = {
-				...currentWallet,
-				bitcoin: { ...currentWallet.bitcoin, balance: btcBalance.balance, balanceUSD: btcBalance.balanceUSD },
-				dogecoin: { ...currentWallet.dogecoin, balance: dogeBalance.balance, balanceUSD: dogeBalance.balanceUSD },
-				litecoin: { ...currentWallet.litecoin, balance: ltcBalance.balance, balanceUSD: ltcBalance.balanceUSD },
-				ethereum: { ...currentWallet.ethereum, balance: ethBalance.balance, balanceUSD: ethBalance.balanceUSD },
-				polygon: { ...currentWallet.polygon, balance: polBalance.balance, balanceUSD: polBalance.balanceUSD },
-				dgage: { ...currentWallet.dgage, balance: dgageBalance.balance, balanceUSD: dgageBalance.balanceUSD },
-				solana: { ...currentWallet.solana, balance: solBalance.balance, balanceUSD: solBalance.balanceUSD },
-				tezos: { ...currentWallet.tezos, balance: xtzBalance.balance, balanceUSD: xtzBalance.balanceUSD },
-				tron: { ...currentWallet.tron, balance: trxBalance.balance, balanceUSD: trxBalance.balanceUSD }
+			const updateChain = (key: keyof typeof currentWallet, promise: Promise<{ balance: string; balanceUSD: string }>) => {
+				const task = promise.then((result) => {
+					wallet.update((w: any) => {
+						if (!w) return w;
+						return {
+							...w,
+							[key]: {
+								...w[key],
+								balance: result.balance,
+								balanceUSD: result.balanceUSD
+							}
+						};
+					});
+				});
+				tasks.push(task);
 			};
 
-			wallet.set(updatedWallet);
-			this.cacheBalances(updatedWallet);
+			updateChain('bitcoin', bitcoinService.getBalanceUSD(currentWallet.bitcoin.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('dogecoin', dogecoinService.getBalanceUSD(currentWallet.dogecoin.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('litecoin', litecoinService.getBalanceUSD(currentWallet.litecoin.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			// Ethereum / Polygon via Ankr (with per-chain fallback)
+			if (ankrEvmBalances?.ethereum) {
+				updateChain('ethereum', Promise.resolve(ankrEvmBalances.ethereum));
+			} else {
+				updateChain('ethereum', ethereumService.getBalanceUSD(currentWallet.ethereum.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			}
+			if (ankrEvmBalances?.polygon) {
+				updateChain('polygon', Promise.resolve(ankrEvmBalances.polygon));
+			} else {
+				updateChain('polygon', polygonService.getBalanceUSD(currentWallet.polygon.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			}
+			updateChain('solana', solanaService.getBalanceUSD(currentWallet.solana.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('tezos', tezosService.getBalanceUSD(currentWallet.tezos.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('tron', tronService.getBalanceUSD(currentWallet.tron.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('dgage', dgageService.getBalanceUSD(currentWallet.dgage.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+
+			// USDC detection (does not block native balances)
+			const usdcTask = (async () => {
+				const ethUsdcContract = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+				const polygonUsdcContract = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
+
+				let detectedEthereumTokens: any[] = [];
+				let detectedPolygonTokens: any[] = [];
+				try {
+					const [ethUsdc, polyUsdc] = await Promise.all([
+						this.tokenScanner.getERC20TokenData(currentWallet.ethereum.address, ethUsdcContract, 'ethereum').catch(() => null),
+						this.tokenScanner.getERC20TokenData(currentWallet.polygon.address, polygonUsdcContract, 'polygon').catch(() => null)
+					]);
+
+					if (ethUsdc && parseFloat(ethUsdc.balance) >= 0) detectedEthereumTokens.push(ethUsdc);
+					if (polyUsdc && parseFloat(polyUsdc.balance) >= 0) detectedPolygonTokens.push(polyUsdc);
+				} catch {
+					// keep empty on error
+				}
+
+				wallet.update((w: any) => {
+					if (!w) return w;
+					return {
+						...w,
+						detectedTokens: {
+							ethereum: detectedEthereumTokens,
+							polygon: detectedPolygonTokens
+						}
+					};
+				});
+			})();
+
+			tasks.push(usdcTask);
+
+			// Wait for all per-chain updates to finish, then cache final balances
+			await Promise.all(tasks);
+			const finalWallet: any = get(wallet);
+			if (finalWallet) {
+				this.cacheBalances(finalWallet);
+			}
 		} catch (error) {
 			// Error handled silently — balances will stay at cached values
 		} finally {
@@ -303,6 +427,69 @@ class WalletService {
 		}
 	}
 
+	/**
+	 * Hydrate the in-memory wallet store with cached balances (if available).
+	 * Used on UI mount to show something instantly and avoid flaky network calls.
+	 */
+	async hydrateWalletFromCache() {
+		const currentWallet = get(wallet);
+		if (!currentWallet) return;
+
+		const cached = await this.loadCachedBalances();
+		if (!cached) return;
+
+		const updatedWallet = {
+			...currentWallet,
+			ethereum: {
+				...currentWallet.ethereum,
+				balance: cached.ethereum?.balance ?? currentWallet.ethereum.balance,
+				balanceUSD: cached.ethereum?.balanceUSD ?? currentWallet.ethereum.balanceUSD
+			},
+			bitcoin: {
+				...currentWallet.bitcoin,
+				balance: cached.bitcoin?.balance ?? currentWallet.bitcoin.balance,
+				balanceUSD: cached.bitcoin?.balanceUSD ?? currentWallet.bitcoin.balanceUSD
+			},
+			dogecoin: {
+				...currentWallet.dogecoin,
+				balance: cached.dogecoin?.balance ?? currentWallet.dogecoin.balance,
+				balanceUSD: cached.dogecoin?.balanceUSD ?? currentWallet.dogecoin.balanceUSD
+			},
+			litecoin: {
+				...currentWallet.litecoin,
+				balance: cached.litecoin?.balance ?? currentWallet.litecoin.balance,
+				balanceUSD: cached.litecoin?.balanceUSD ?? currentWallet.litecoin.balanceUSD
+			},
+			tezos: {
+				...currentWallet.tezos,
+				balance: cached.tezos?.balance ?? currentWallet.tezos.balance,
+				balanceUSD: cached.tezos?.balanceUSD ?? currentWallet.tezos.balanceUSD
+			},
+			tron: {
+				...currentWallet.tron,
+				balance: cached.tron?.balance ?? currentWallet.tron.balance,
+				balanceUSD: cached.tron?.balanceUSD ?? currentWallet.tron.balanceUSD
+			},
+			solana: {
+				...currentWallet.solana,
+				balance: cached.solana?.balance ?? currentWallet.solana.balance,
+				balanceUSD: cached.solana?.balanceUSD ?? currentWallet.solana.balanceUSD
+			},
+			polygon: {
+				...currentWallet.polygon,
+				balance: cached.polygon?.balance ?? currentWallet.polygon.balance,
+				balanceUSD: cached.polygon?.balanceUSD ?? currentWallet.polygon.balanceUSD
+			},
+			dgage: {
+				...currentWallet.dgage,
+				balance: cached.dgage?.balance ?? currentWallet.dgage.balance,
+				balanceUSD: cached.dgage?.balanceUSD ?? currentWallet.dgage.balanceUSD
+			}
+		};
+
+		wallet.set(updatedWallet);
+	}
+
 	lock() {
 		wallet.set(null);
 		isUnlocked.set(false);
@@ -334,6 +521,37 @@ class WalletService {
 		}
 
 		return walletData;
+	}
+
+	getChainService(chain: string) {
+		switch (chain.toLowerCase()) {
+			case 'bitcoin':
+			case 'btc':
+				return new BitcoinService();
+			case 'dogecoin':
+			case 'doge':
+				return new DogecoinService();
+			case 'litecoin':
+			case 'ltc':
+				return new LitecoinService();
+			case 'ethereum':
+			case 'eth':
+				return new EVMChainService('ethereum');
+			case 'polygon':
+			case 'pol':
+				return new EVMChainService('polygon');
+			case 'solana':
+			case 'sol':
+				return new SolanaService();
+			case 'tezos':
+			case 'xtz':
+				return new TezosService();
+			case 'tron':
+			case 'trx':
+				return new TronService();
+			default:
+				return null;
+		}
 	}
 }
 

@@ -1,7 +1,10 @@
 /**
  * Unified EVM Chain Service
  * Handles Ethereum, Polygon address derivation, balance, and transactions
+ * Now uses Worker endpoints instead of direct RPC calls
  */
+
+import { priceService } from './price-service';
 
 const WORKER_URL = 'https://api.rivarawallet.xyz';
 
@@ -10,8 +13,7 @@ const CHAIN_CONFIGS = {
 		name: 'Ethereum',
 		symbol: 'ETH',
 		chainId: 1,
-		rpcUrl: `${WORKER_URL}/api/infura`,
-		rpcFallback: `${WORKER_URL}/api/infura`,
+		blockchain: 'eth',
 		coingeckoId: 'ethereum',
 		scanApi: 'https://api.etherscan.io/api',
 		explorer: 'https://etherscan.io/tx/',
@@ -21,8 +23,7 @@ const CHAIN_CONFIGS = {
 		name: 'Polygon',
 		symbol: 'POL',
 		chainId: 137,
-		rpcUrl: `${WORKER_URL}/api/polygon/rpc`,
-		rpcFallback: `${WORKER_URL}/api/polygon/rpc`,
+		blockchain: 'polygon',
 		coingeckoId: 'matic-network',
 		scanApi: 'https://api.polygonscan.com/api',
 		explorer: 'https://polygonscan.com/tx/',
@@ -31,73 +32,13 @@ const CHAIN_CONFIGS = {
 };
 
 class EvmChainService {
-	constructor(chain, infuraApiKey = null) {
+	constructor(chain) {
 		this.chain = chain;
 		this.config = CHAIN_CONFIGS[chain];
 		if (!this.config) {
 			throw new Error(`Unsupported EVM chain: ${chain}`);
 		}
-		this.infuraApiKey = infuraApiKey;
-		this.provider = null;
 		this.cachedPrice = this.config.defaultPrice;
-
-		this.initProvider();
-	}
-
-	initProvider() {
-		if (!window.cryptoLibs?.ethers) {
-			console.warn(`Ethers not loaded yet for ${this.config.name}, will retry on use`);
-			return;
-		}
-
-		const { ethers } = window.cryptoLibs;
-
-		try {
-			if (this.chain === 'ethereum' && this.infuraApiKey) {
-				this.provider = new ethers.providers.InfuraProvider('mainnet', this.infuraApiKey);
-			} else if (this.config.rpcUrl) {
-				this.provider = new ethers.providers.JsonRpcProvider(this.config.rpcUrl);
-			}
-		} catch (error) {
-			console.warn(`Failed to init ${this.config.name} provider with primary RPC, trying fallback...`);
-			try {
-				if (this.config.rpcFallback) {
-					this.provider = new ethers.providers.JsonRpcProvider(this.config.rpcFallback);
-				}
-			} catch (fallbackError) {
-				console.error(`Failed to init ${this.config.name} provider with fallback RPC:`, fallbackError);
-			}
-		}
-	}
-
-	// Ensure provider is ready before use
-	async ensureProvider() {
-		if (this.provider) return;
-
-		// Retry init if ethers wasn't loaded before
-		if (window.cryptoLibs?.ethers) {
-			this.initProvider();
-		}
-
-		// Wait a bit for ethers to load if still not available
-		if (!this.provider) {
-			for (let i = 0; i < 10; i++) {
-				await new Promise(resolve => setTimeout(resolve, 200));
-				if (window.cryptoLibs?.ethers) {
-					this.initProvider();
-					if (this.provider) break;
-				}
-			}
-		}
-
-		if (!this.provider) {
-			throw new Error(`Provider not initialized for ${this.config.name}`);
-		}
-	}
-
-	setInfuraKey(apiKey) {
-		this.infuraApiKey = apiKey;
-		this.initProvider();
 	}
 
 	/**
@@ -113,14 +54,42 @@ class EvmChainService {
 	}
 
 	/**
-	 * Get balance in native units
+	 * Get balance in native units via Worker Ankr endpoint
 	 */
 	async getBalance(address) {
-		await this.ensureProvider();
+		try {
+			console.log(`Fetching ${this.config.name} balance via Worker Ankr endpoint`);
 
-		const { ethers } = window.cryptoLibs;
-		const balance = await this.provider.getBalance(address);
-		return ethers.utils.formatEther(balance);
+			const response = await fetch(`${WORKER_URL}/api/ankr/scan`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					walletAddress: address,
+					blockchains: [this.config.blockchain]
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error(`Worker returned ${response.status}`);
+			}
+
+			const data = await response.json();
+			const assets = data?.assets || [];
+
+			// Find native asset (no contract address)
+			const nativeAsset = assets.find(asset => 
+				asset.blockchain === this.config.blockchain && !asset.contractAddress
+			);
+
+			if (nativeAsset && nativeAsset.balance !== undefined) {
+				return parseFloat(nativeAsset.balance).toFixed(6);
+			}
+
+			return '0.000000';
+		} catch (error) {
+			console.error(`Failed to fetch ${this.config.name} balance:`, error);
+			return '0.000000';
+		}
 	}
 
 	/**
@@ -130,9 +99,7 @@ class EvmChainService {
 		const balance = await this.getBalance(address);
 
 		try {
-			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/prices?ids=${this.config.coingeckoId}`);
-			const data = await response.json();
-			const price = data[this.config.coingeckoId]?.usd;
+			const price = await priceService.getPrice(this.config.coingeckoId);
 
 			if (price && price > 0) {
 				this.cachedPrice = price;
@@ -180,13 +147,18 @@ class EvmChainService {
 	}
 
 	/**
-	 * Send transaction
+	 * Send transaction - uses Worker's RPC proxy
 	 */
 	async sendTransaction(mnemonic, toAddress, amount) {
-		await this.ensureProvider();
-
 		const { ethers } = window.cryptoLibs;
-		const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(this.provider);
+		
+		// Use Worker's RPC proxy for sending transactions
+		const rpcUrl = this.chain === 'ethereum' 
+			? `${WORKER_URL}/api/ethereum/rpc`
+			: `${WORKER_URL}/api/polygon/rpc`;
+		
+		const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+		const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
 
 		const tx = {
 			to: toAddress,
@@ -200,16 +172,19 @@ class EvmChainService {
 	}
 
 	/**
-	 * Estimate transaction fee
+	 * Estimate transaction fee - uses Worker's RPC proxy
 	 */
 	async estimateFee(toAddress, amount) {
 		try {
-			if (!this.provider) {
-				return '0.001';
-			}
-
 			const { ethers } = window.cryptoLibs;
-			const dummyWallet = ethers.Wallet.fromMnemonic('test test test test test test test test test test test junk').connect(this.provider);
+			
+			// Use Worker's RPC proxy for fee estimation
+			const rpcUrl = this.chain === 'ethereum' 
+				? `${WORKER_URL}/api/ethereum/rpc`
+				: `${WORKER_URL}/api/polygon/rpc`;
+			
+			const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+			const dummyWallet = ethers.Wallet.fromMnemonic('test test test test test test test test test test test junk').connect(provider);
 
 			const tx = {
 				to: toAddress,
@@ -217,7 +192,7 @@ class EvmChainService {
 			};
 
 			const gasEstimate = await dummyWallet.estimateGas(tx);
-			const gasPrice = await this.provider.getGasPrice();
+			const gasPrice = await provider.getGasPrice();
 			const gasCost = gasEstimate.mul(gasPrice);
 
 			return ethers.utils.formatEther(gasCost);
@@ -232,9 +207,7 @@ class EvmChainService {
 	 */
 	async getPrice() {
 		try {
-			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/prices?ids=${this.config.coingeckoId}`);
-			const data = await response.json();
-			const price = data[this.config.coingeckoId]?.usd;
+			const price = await priceService.getPrice(this.config.coingeckoId);
 
 			if (price && price > 0) {
 				this.cachedPrice = price;
@@ -250,8 +223,8 @@ class EvmChainService {
 
 // Export individual chain classes for backwards compatibility
 class EthereumService extends EvmChainService {
-	constructor(infuraApiKey) {
-		super('ethereum', infuraApiKey);
+	constructor() {
+		super('ethereum');
 	}
 }
 

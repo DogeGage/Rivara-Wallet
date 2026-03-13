@@ -2,18 +2,53 @@
 class DGAGEService {
     constructor() {
         this.contractAddress = '0x9b359461EDdCEd424e37c1b3d2e54c875a5a319D';
-        this.rpcUrls = [
-            'https://polygon-rpc.com',
-            'https://rpc-mainnet.matic.quiknode.pro',
-            'https://polygon.llamarpc.com'
-        ];
-        this.abi = [
-            "function balanceOf(address account) view returns (uint256)",
-            "function decimals() view returns (uint8)",
-            "function symbol() view returns (string)",
-            "function transfer(address to, uint256 amount) returns (bool)"
-        ];
-        this._decimals = null; // Cache decimals
+        this.workerUrl = 'https://api.rivarawallet.xyz';
+        this._decimals = 18; // DGAGE uses 18 decimals
+    }
+
+    async getBalance(address) {
+        try {
+            console.log('Fetching DGAGE balance via Worker Ankr endpoint');
+
+            const response = await fetch(`${this.workerUrl}/api/ankr/scan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    walletAddress: address,
+                    blockchains: ['polygon']
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Worker returned ${response.status}`);
+            }
+
+            const data = await response.json();
+            const assets = data?.assets || [];
+
+            // Find DGAGE token in the response
+            const dgageToken = assets.find(asset => 
+                asset.contractAddress?.toLowerCase() === this.contractAddress.toLowerCase()
+            );
+
+            if (dgageToken && dgageToken.balance) {
+                return parseFloat(dgageToken.balance).toFixed(6);
+            }
+
+            return '0';
+        } catch (error) {
+            console.error('Failed to fetch DGAGE balance:', error);
+            return '0';
+        }
+    }
+
+    async getBalanceUSD(address) {
+        const balance = await this.getBalance(address);
+        // DGAGE doesn't have a market price yet, return 0
+        return {
+            balance: balance,
+            balanceUSD: '0.00'
+        };
     }
 
     getEthers() {
@@ -26,59 +61,19 @@ class DGAGEService {
         throw new Error('Ethers library not loaded');
     }
 
-    getProvider(rpcIndex = 0) {
-        const ethers = this.getEthers();
-        const url = this.rpcUrls[rpcIndex] || this.rpcUrls[0];
-        return new ethers.providers.JsonRpcProvider(url);
-    }
-
-    async getBalance(address) {
-        const ethers = this.getEthers();
-
-        // Try each RPC endpoint until one works
-        for (let i = 0; i < this.rpcUrls.length; i++) {
-            try {
-                const provider = this.getProvider(i);
-                const contract = new ethers.Contract(this.contractAddress, this.abi, provider);
-
-                const balance = await contract.balanceOf(address);
-
-                // Fetch and cache decimals if not already known
-                if (this._decimals === null) {
-                    try {
-                        this._decimals = await contract.decimals();
-                    } catch {
-                        this._decimals = 18; // Default to 18 if call fails
-                    }
-                }
-
-                return ethers.utils.formatUnits(balance, this._decimals);
-            } catch (error) {
-                console.warn(`DGAGE balance fetch failed on RPC ${i} (${this.rpcUrls[i]}):`, error.message);
-                if (i === this.rpcUrls.length - 1) {
-                    console.error('Failed to fetch DGAGE balance on all RPCs:', error);
-                    return '0';
-                }
-            }
-        }
-        return '0';
-    }
-
-    async getBalanceUSD(address) {
-        // DGAGE doesn't have a market price yet, return 0
-        return 0;
-    }
-
     async sendDGAGE(privateKey, toAddress, amount) {
         try {
             const ethers = this.getEthers();
-            const provider = this.getProvider();
+            // Use Worker's Polygon RPC proxy for sending
+            const provider = new ethers.providers.JsonRpcProvider(`${this.workerUrl}/api/polygon/rpc`);
             const wallet = new ethers.Wallet(privateKey, provider);
-            const contract = new ethers.Contract(this.contractAddress, this.abi, wallet);
+            
+            const abi = [
+                "function transfer(address to, uint256 amount) returns (bool)"
+            ];
+            const contract = new ethers.Contract(this.contractAddress, abi, wallet);
 
-            // Use cached decimals or default to 18
-            const decimals = this._decimals || 18;
-            const amountWei = ethers.utils.parseUnits(amount.toString(), decimals);
+            const amountWei = ethers.utils.parseUnits(amount.toString(), this._decimals);
 
             // Get current gas price from network
             const feeData = await provider.getFeeData();

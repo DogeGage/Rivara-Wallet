@@ -28,6 +28,8 @@ export interface Wallet {
 
 export const wallet: Writable<Wallet | null> = writable(null);
 export const isUnlocked = writable(false);
+/** Set true only right before navigating to /wallet from unlock; wallet page sets false on mount. Prevents redirect loop. */
+export const isCurrentUnlock: Writable<boolean> = writable(false);
 export const balancesLoading = writable(false);
 export const selectedCurrency = writable('usd');
 
@@ -59,11 +61,11 @@ export const currencySymbols: Record<string, string> = {
 	krw: '₩'
 };
 
-// Derived store for total balance
+// Derived store for total balance (includes native chains + detected ERC-20 e.g. USDC)
 export const totalBalance = derived(wallet, ($wallet) => {
 	if (!$wallet) return '0.00';
 
-	const total =
+	let total =
 		parseFloat($wallet.bitcoin.balanceUSD || '0') +
 		parseFloat($wallet.ethereum.balanceUSD || '0') +
 		parseFloat($wallet.dogecoin.balanceUSD || '0') +
@@ -73,6 +75,11 @@ export const totalBalance = derived(wallet, ($wallet) => {
 		parseFloat($wallet.tezos.balanceUSD || '0') +
 		parseFloat($wallet.tron.balanceUSD || '0') +
 		parseFloat($wallet.solana.balanceUSD || '0');
+
+	const ethTokens = $wallet.detectedTokens?.ethereum || [];
+	const polyTokens = $wallet.detectedTokens?.polygon || [];
+	for (const t of ethTokens) total += parseFloat(t.balanceUSD || '0');
+	for (const t of polyTokens) total += parseFloat(t.balanceUSD || '0');
 
 	return total.toFixed(2);
 });

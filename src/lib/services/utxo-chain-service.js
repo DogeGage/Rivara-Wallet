@@ -3,6 +3,8 @@
  * Handles Bitcoin, Litecoin, Dogecoin address derivation, balance, and transactions
  */
 
+import { priceService } from './price-service';
+
 const WORKER_URL = 'https://api.rivarawallet.xyz';
 
 const CHAIN_CONFIGS = {
@@ -109,23 +111,21 @@ class UtxoChainService {
 		const balance = await this.getBalance(address);
 
 		try {
-			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/prices?ids=${this.config.coingeckoId}`);
-			const data = await response.json();
-			const price = data[this.config.coingeckoId]?.usd;
+			const price = await priceService.getPrice(this.config.coingeckoId);
 
 			if (price && price > 0) {
 				this.cachedPrice = price;
 			}
 
 			return {
-				balance: balance,
+				balance,
 				balanceUSD: (parseFloat(balance) * this.cachedPrice).toFixed(2),
 				price: this.cachedPrice
 			};
 		} catch (error) {
 			console.error(`Failed to get ${this.config.name} price:`, error);
 			return {
-				balance: balance,
+				balance,
 				balanceUSD: (parseFloat(balance) * this.cachedPrice).toFixed(2),
 				price: this.cachedPrice
 			};

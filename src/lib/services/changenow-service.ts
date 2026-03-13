@@ -23,7 +23,7 @@ interface ExchangeResponse {
 class ChangeNowService {
 	private workerUrl = 'https://api.rivarawallet.xyz';
 
-	// Currency code mapping
+	// Currency code mapping (ChangeNOW API tickers)
 	getCurrencyCode(symbol: string): string {
 		const mapping: Record<string, string> = {
 			'BTC': 'btc',
@@ -33,7 +33,9 @@ class ChangeNowService {
 			'SOL': 'sol',
 			'XTZ': 'xtz',
 			'TRX': 'trx',
-			'POL': 'matic'
+			'POL': 'matic',
+			'USDC_ETH': 'usdc',
+			'USDC_POL': 'usdcmatic'
 		};
 		return mapping[symbol] || symbol.toLowerCase();
 	}

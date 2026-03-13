@@ -5,6 +5,8 @@
  * https://github.com/dominic84p/Rivara-Wallet
  */
 
+import { priceService } from './price-service';
+
 // Solana Service - Handle SOL balance and address derivation
 class SolanaService {
     constructor() {
@@ -50,18 +52,14 @@ class SolanaService {
         try {
             const solBalance = await this.getBalance(address);
 
-            // Get SOL price from CoinGecko via worker
+            // Get SOL price from centralized price service
             try {
-                const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=solana');
-                const data = await response.json();
-
-                if (data.solana && data.solana.usd && data.solana.usd > 0) {
-                    this.cachedPrice = data.solana.usd;
-                } else {
-                    console.warn('CoinGecko returned no price data, using cached price');
+                const price = await priceService.getPrice('solana');
+                if (price && price > 0) {
+                    this.cachedPrice = price;
                 }
             } catch (priceError) {
-                console.error('Failed to get Solana price from CoinGecko:', priceError);
+                console.error('Failed to get Solana price:', priceError);
             }
 
             return {

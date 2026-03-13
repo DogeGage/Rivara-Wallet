@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
-	import { wallet, isUnlocked } from '$lib/stores/wallet';
+	import { wallet, isUnlocked, isCurrentUnlock } from '$lib/stores/wallet';
 	import { walletService } from '$lib/services/wallet-service';
 
 	// Inline encryption functions
@@ -84,9 +84,8 @@
 			goto('/');
 			return;
 		}
-		if (sessionStorage.getItem('walletUnlocked') === 'true') {
-			goto('/wallet');
-		}
+		// Do NOT redirect to wallet here based on session — prevents redirect loop.
+		// Only goto('/wallet') when isCurrentUnlock is true (set on successful unlock).
 
 		// Restore lockout state from sessionStorage
 		const storedAttempts = sessionStorage.getItem('failedUnlockAttempts');
@@ -134,6 +133,7 @@
 			sessionStorage.removeItem('lockoutUntil');
 
 			localStorage.setItem('isWalletAlive', 'true');
+			isCurrentUnlock.set(true);
 			goto('/wallet');
 			walletService.fetchBalances().catch(() => {});
 		} catch (err: any) {

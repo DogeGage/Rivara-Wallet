@@ -5,6 +5,8 @@
  * https://github.com/dominic84p/Rivara-Wallet
  */
 
+import { priceService } from './price-service';
+
 // Tezos Service - Handle XTZ balance and address derivation
 class TezosService {
 
@@ -37,11 +39,9 @@ class TezosService {
     async getBalanceUSD(address) {
         const xtzBalance = await this.getBalance(address);
 
-        // Get XTZ price from CoinGecko via worker
+        // Get XTZ price from centralized price service
         try {
-            const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=tezos');
-            const data = await response.json();
-            const xtzPrice = data.tezos?.usd || 0;
+            const xtzPrice = await priceService.getPrice('tezos');
 
             return {
                 balance: xtzBalance,

@@ -8,7 +8,7 @@
 		Wallet, Send, ArrowDownToLine, RefreshCw, Settings, Eye, EyeOff,
 		Copy, Check, Lock, TrendingUp, ChevronDown, ChevronRight, ArrowLeft
 	} from 'lucide-svelte';
-	import { wallet, isUnlocked, balancesLoading, totalBalance, selectedCurrency, exchangeRates, currencySymbols, convertCurrency, fetchExchangeRates } from '$lib/stores/wallet';
+	import { wallet, isUnlocked, isCurrentUnlock, balancesLoading, totalBalance, selectedCurrency, exchangeRates, currencySymbols, convertCurrency, fetchExchangeRates } from '$lib/stores/wallet';
 	import { walletService } from '$lib/services/wallet-service';
 
 
@@ -25,6 +25,12 @@
 		tron: true,
 		solana: true
 	};
+	let transactions: any[] = [];
+	let loadingTransactions = false;
+	let chartData: any = null;
+	let loadingChart = false;
+	let chartDays = 1;
+	let chartInstance: any = null;
 
 	$: currentWallet = $wallet;
 	$: currentTotalBalance = $totalBalance;
@@ -32,67 +38,57 @@
 	$: currentRates = $exchangeRates;
 	$: isLoading = $balancesLoading;
 
-	$: chainGroups = currentWallet ? [
-		{
-			name: 'Bitcoin',
-			key: 'bitcoin',
-			color: '#f7931a',
-			assets: [
-				{ name: 'Bitcoin', symbol: 'BTC', balance: currentWallet.bitcoin?.balance || '0', usd: convertCurrency(currentWallet.bitcoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/btc.svg', address: currentWallet.bitcoin?.address || '' },
-				{ name: 'Dogecoin', symbol: 'DOGE', balance: currentWallet.dogecoin?.balance || '0', usd: convertCurrency(currentWallet.dogecoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/doge.svg', address: currentWallet.dogecoin?.address || '' },
-				{ name: 'Litecoin', symbol: 'LTC', balance: currentWallet.litecoin?.balance || '0', usd: convertCurrency(currentWallet.litecoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/ltc.svg', address: currentWallet.litecoin?.address || '' }
-			]
-		},
-		{
-			name: 'Ethereum',
-			key: 'ethereum',
-			color: '#627eea',
-			assets: [
-				{ name: 'Ethereum', symbol: 'ETH', balance: currentWallet.ethereum?.balance || '0', usd: convertCurrency(currentWallet.ethereum?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/eth.svg', address: currentWallet.ethereum?.address || '' },
-				{ name: 'Polygon', symbol: 'POL', balance: currentWallet.polygon?.balance || '0', usd: convertCurrency(currentWallet.polygon?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/matic.svg', address: currentWallet.polygon?.address || '' }
-			]
-		},
-		{
-			name: 'Tezos',
-			key: 'tezos',
-			color: '#2c7df7',
-			assets: [
-				{ name: 'Tezos', symbol: 'XTZ', balance: currentWallet.tezos?.balance || '0', usd: convertCurrency(currentWallet.tezos?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/xtz.svg', address: currentWallet.tezos?.address || '' }
-			]
-		},
-		{
-			name: 'Tron',
-			key: 'tron',
-			color: '#ef0027',
-			assets: [
-				{ name: 'Tron', symbol: 'TRX', balance: currentWallet.tron?.balance || '0', usd: convertCurrency(currentWallet.tron?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/trx.svg', address: currentWallet.tron?.address || '' }
-			]
-		},
-		{
-			name: 'Solana',
-			key: 'solana',
-			color: '#14f195',
-			assets: [
-				{ name: 'Solana', symbol: 'SOL', balance: currentWallet.solana?.balance || '0', usd: convertCurrency(currentWallet.solana?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/sol.svg', address: currentWallet.solana?.address || '' }
-			]
-		}
-	] : [];
+	$: chainGroups = currentWallet
+		? (() => {
+				const ethTokens = currentWallet.detectedTokens?.ethereum || [];
+				const polygonTokens = currentWallet.detectedTokens?.polygon || [];
+				const ethUsdc = ethTokens.find((t: any) => t.symbol === 'USDC');
+				const polyUsdc = polygonTokens.find((t: any) => t.symbol === 'USDC');
 
-	$: allCryptos = chainGroups?.flatMap(g => g.assets) || [];
-	$: selectedAsset = selectedCrypto ? allCryptos.find(c => c.symbol === selectedCrypto) : null;
+				const ethereumAssets = [
+					{ id: 'ETH', name: 'Ethereum', symbol: 'ETH', balance: currentWallet.ethereum?.balance || '0', usd: convertCurrency(currentWallet.ethereum?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/eth.svg', address: currentWallet.ethereum?.address || '' },
+					{ id: 'POL', name: 'Polygon', symbol: 'POL', balance: currentWallet.polygon?.balance || '0', usd: convertCurrency(currentWallet.polygon?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/matic.svg', address: currentWallet.polygon?.address || '' },
+					{ id: 'USDC_ETH', name: 'USD Coin (Ethereum)', symbol: 'USDC', balance: ethUsdc?.balance || '0', usd: ethUsdc ? convertCurrency(ethUsdc.balanceUSD || '0', currentCurrency, currentRates) : '0.00', icon: '/assets/crypto/SVG/iusdc.svg', address: currentWallet.ethereum?.address || '' },
+					{ id: 'USDC_POL', name: 'USD Coin (Polygon)', symbol: 'USDC', balance: polyUsdc?.balance || '0', usd: polyUsdc ? convertCurrency(polyUsdc.balanceUSD || '0', currentCurrency, currentRates) : '0.00', icon: '/assets/crypto/SVG/plUSDC.svg', address: currentWallet.polygon?.address || '' }
+				];
+
+				return [
+					{ name: 'Bitcoin', key: 'bitcoin', color: '#f7931a', assets: [
+						{ id: 'BTC', name: 'Bitcoin', symbol: 'BTC', balance: currentWallet.bitcoin?.balance || '0', usd: convertCurrency(currentWallet.bitcoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/btc.svg', address: currentWallet.bitcoin?.address || '' },
+						{ id: 'DOGE', name: 'Dogecoin', symbol: 'DOGE', balance: currentWallet.dogecoin?.balance || '0', usd: convertCurrency(currentWallet.dogecoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/doge.svg', address: currentWallet.dogecoin?.address || '' },
+						{ id: 'LTC', name: 'Litecoin', symbol: 'LTC', balance: currentWallet.litecoin?.balance || '0', usd: convertCurrency(currentWallet.litecoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/ltc.svg', address: currentWallet.litecoin?.address || '' }
+					]},
+					{ name: 'Ethereum', key: 'ethereum', color: '#627eea', assets: ethereumAssets },
+					{ name: 'Tezos', key: 'tezos', color: '#2c7df7', assets: [
+						{ id: 'XTZ', name: 'Tezos', symbol: 'XTZ', balance: currentWallet.tezos?.balance || '0', usd: convertCurrency(currentWallet.tezos?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/xtz.svg', address: currentWallet.tezos?.address || '' }
+					]},
+					{ name: 'Tron', key: 'tron', color: '#ef0027', assets: [
+						{ id: 'TRX', name: 'Tron', symbol: 'TRX', balance: currentWallet.tron?.balance || '0', usd: convertCurrency(currentWallet.tron?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/trx.svg', address: currentWallet.tron?.address || '' }
+					]},
+					{ name: 'Solana', key: 'solana', color: '#14f195', assets: [
+						{ id: 'SOL', name: 'Solana', symbol: 'SOL', balance: currentWallet.solana?.balance || '0', usd: convertCurrency(currentWallet.solana?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/sol.svg', address: currentWallet.solana?.address || '' }
+					]}
+				];
+			})()
+		: [];
+
+	$: allCryptos = chainGroups?.flatMap((g) => g.assets) || [];
+	$: selectedAsset = selectedCrypto ? allCryptos.find((c) => c.id === selectedCrypto) : null;
 	$: convertedBalance = convertCurrency(currentTotalBalance, currentCurrency, currentRates);
-
-	// Reactive auth guard — if store says not unlocked, redirect
-	$: if (!$isUnlocked) {
-		goto('/unlock');
-	}
 
 	onMount(async () => {
 		console.log('🔵 Wallet page mounted');
-		
-		// If not unlocked, the reactive check above handles redirect
-		if (!$isUnlocked) return;
-		
+		if (!browser) return;
+
+		isCurrentUnlock.set(false);
+
+		const unlocked = sessionStorage.getItem('walletUnlocked') === 'true';
+		if (!unlocked) {
+			goto('/unlock');
+			return;
+		}
+		isUnlocked.set(true);
+
 		const walletData = walletService.getWallet();
 		console.log('🔵 Wallet data from service:', walletData);
 		
@@ -102,12 +98,14 @@
 			return;
 		}
 		
+		// Set base wallet from service, then hydrate with any cached balances
 		wallet.set(walletData);
+		await walletService.hydrateWalletFromCache();
 		pageLoading = false;
 
-		console.log('🔵 Fetching exchange rates and balances...');
+		// Only fetch fresh balances when user explicitly refreshes
+		console.log('🔵 Fetching exchange rates (balances only on manual refresh)...');
 		await fetchExchangeRates();
-		await walletService.fetchBalances();
 	});
 
 	function toggleBalance() { balanceVisible = !balanceVisible; }
@@ -116,9 +114,17 @@
 		expandedChains[key] = !expandedChains[key];
 	}
 
-	function selectAsset(symbol: string) {
-		selectedCrypto = symbol;
+	async function selectAsset(id: string) {
+		selectedCrypto = id;
 		showingSend = false;
+		transactions = [];
+		chartData = null;
+		
+		// Load transactions and chart
+		await Promise.all([
+			loadTransactions(id),
+			loadChart(id, chartDays)
+		]);
 	}
 
 	function clearSelectedAsset() {
@@ -150,6 +156,182 @@
 
 	function showSend() { showingSend = true; }
 	function showReceive() { showingSend = false; }
+
+	async function loadTransactions(assetId: string) {
+		if (!selectedAsset) return;
+		loadingTransactions = true;
+		
+		try {
+			const service = getServiceForAsset(assetId);
+			if (service) {
+				transactions = await service.getTransactions(selectedAsset.address);
+			}
+		} catch (error) {
+			console.error('Failed to load transactions:', error);
+			transactions = [];
+		} finally {
+			loadingTransactions = false;
+		}
+	}
+
+	async function loadChart(assetId: string, days: number) {
+		if (!selectedAsset) return;
+		loadingChart = true;
+		chartData = null;
+		
+		try {
+			const coinId = getCoinGeckoId(assetId);
+			if (!coinId) {
+				loadingChart = false;
+				return;
+			}
+			
+			const response = await fetch(`https://api.rivarawallet.xyz/api/coingecko/chart?id=${coinId}&days=${days}`);
+			
+			if (response.ok) {
+				const data = await response.json();
+				// Check if it's cached data (not an error)
+				if (data.prices && Array.isArray(data.prices)) {
+					chartData = data;
+					// Render chart after a small delay to ensure canvas exists
+					setTimeout(() => renderChart(), 50);
+				} else {
+					console.warn('Chart data not in cache:', data);
+					chartData = null;
+				}
+			} else if (response.status === 503) {
+				// Chart not cached yet - this is expected
+				console.log('Chart not cached for', coinId, days, 'days');
+				chartData = null;
+			} else {
+				console.error('Chart fetch failed:', response.status);
+				chartData = null;
+			}
+		} catch (error) {
+			console.error('Failed to load chart:', error);
+			chartData = null;
+		} finally {
+			loadingChart = false;
+		}
+	}
+
+	function getCoinGeckoId(assetId: string): string | null {
+		const mapping: Record<string, string> = {
+			'BTC': 'bitcoin',
+			'ETH': 'ethereum',
+			'DOGE': 'dogecoin',
+			'LTC': 'litecoin',
+			'SOL': 'solana',
+			'XTZ': 'tezos',
+			'TRX': 'tron',
+			'POL': 'polygon-ecosystem-token'
+			// USDC is a stablecoin - no chart needed
+		};
+		return mapping[assetId] || null;
+	}
+
+	function getServiceForAsset(assetId: string) {
+		if (['BTC', 'DOGE', 'LTC'].includes(assetId)) {
+			return walletService.getChainService(assetId.toLowerCase());
+		} else if (['ETH', 'POL', 'USDC_ETH', 'USDC_POL'].includes(assetId)) {
+			return walletService.getChainService(assetId === 'POL' || assetId === 'USDC_POL' ? 'polygon' : 'ethereum');
+		} else if (assetId === 'SOL') {
+			return walletService.getChainService('solana');
+		} else if (assetId === 'XTZ') {
+			return walletService.getChainService('tezos');
+		} else if (assetId === 'TRX') {
+			return walletService.getChainService('tron');
+		}
+		return null;
+	}
+
+	function renderChart() {
+		if (!chartData?.prices || !browser) return;
+		
+		const canvas = document.getElementById('priceChart') as HTMLCanvasElement;
+		if (!canvas) {
+			console.warn('Canvas not found, retrying...');
+			setTimeout(() => renderChart(), 100);
+			return;
+		}
+		
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+		
+		// Destroy existing chart
+		if (chartInstance) {
+			chartInstance.destroy();
+			chartInstance = null;
+		}
+		
+		const prices = chartData.prices;
+		const labels = prices.map((p: any) => {
+			const date = new Date(p[0]);
+			if (chartDays === 1) {
+				return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+			} else {
+				return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+			}
+		});
+		const values = prices.map((p: any) => p[1]);
+		
+		const priceChange = values[values.length - 1] - values[0];
+		const chartColor = priceChange >= 0 ? '#4ade80' : '#ef4444';
+		
+		// @ts-ignore
+		chartInstance = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels,
+				datasets: [{
+					label: 'Price',
+					data: values,
+					borderColor: chartColor,
+					backgroundColor: chartColor + '20',
+					fill: true,
+					tension: 0.4,
+					pointRadius: 0,
+					borderWidth: 2
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						mode: 'index',
+						intersect: false,
+						callbacks: {
+							label: (context: any) => '$' + context.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+						}
+					}
+				},
+				scales: {
+					x: {
+						display: true,
+						grid: { display: false },
+						ticks: { color: '#888', maxTicksLimit: 6 }
+					},
+					y: {
+						display: true,
+						grid: { color: 'rgba(255,255,255,0.1)' },
+						ticks: {
+							color: '#888',
+							callback: (value: any) => '$' + value.toLocaleString()
+						}
+					}
+				}
+			}
+		});
+	}
+
+	async function changeChartTimeframe(days: number) {
+		chartDays = days;
+		if (selectedCrypto) {
+			await loadChart(selectedCrypto, days);
+		}
+	}
 </script>
 
 
@@ -232,8 +414,8 @@
 							<div class="bg-black/20 border-t border-white/5">
 								{#each group.assets as asset}
 									<button 
-										class="w-full flex items-center gap-2.5 px-3 py-2.5 pl-11 border-b border-white/[0.02] last:border-b-0 transition-all hover:bg-white/5 {selectedCrypto === asset.symbol ? 'bg-cyan-500/15 border-l-3 !border-l-cyan-500' : ''}"
-										on:click={() => selectAsset(asset.symbol)}
+										class="w-full flex items-center gap-2.5 px-3 py-2.5 pl-11 border-b border-white/[0.02] last:border-b-0 transition-all hover:bg-white/5 {selectedCrypto === asset.id ? 'bg-cyan-500/15 border-l-3 !border-l-cyan-500' : ''}"
+										on:click={() => selectAsset(asset.id)}
 									>
 										<img src={asset.icon} alt={asset.name} class="w-7 h-7" />
 										<div class="flex-1 text-left">
@@ -321,22 +503,69 @@
 							<div class="flex items-center justify-between mb-5">
 								<h2 class="text-lg font-bold text-white">Price Chart</h2>
 								<div class="flex gap-1.5">
-									<button class="px-2.5 py-1.5 bg-cyan-600 text-white text-xs font-medium rounded-md">24H</button>
-									<button class="px-2.5 py-1.5 bg-stone-800/50 text-slate-400 text-xs font-medium rounded-md hover:bg-stone-700 transition">7D</button>
-									<button class="px-2.5 py-1.5 bg-stone-800/50 text-slate-400 text-xs font-medium rounded-md hover:bg-stone-700 transition">30D</button>
+									<button 
+										class="px-2.5 py-1.5 text-xs font-medium rounded-md transition {chartDays === 1 ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
+										on:click={() => changeChartTimeframe(1)}
+									>24H</button>
+									<button 
+										class="px-2.5 py-1.5 text-xs font-medium rounded-md transition {chartDays === 7 ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
+										on:click={() => changeChartTimeframe(7)}
+									>7D</button>
+									<button 
+										class="px-2.5 py-1.5 text-xs font-medium rounded-md transition {chartDays === 30 ? 'bg-cyan-600 text-white' : 'bg-stone-800/50 text-slate-400 hover:bg-stone-700'}"
+										on:click={() => changeChartTimeframe(30)}
+									>30D</button>
 								</div>
 							</div>
-							<div class="h-40 flex items-center justify-center text-slate-500 text-sm">
-								Chart temporarily unavailable (rate limited)
-							</div>
+							{#if loadingChart}
+								<div class="h-40 flex items-center justify-center text-slate-500 text-sm">
+									Loading chart...
+								</div>
+							{:else if chartData?.prices}
+								<div class="h-40">
+									<canvas id="priceChart"></canvas>
+								</div>
+							{:else}
+								<div class="h-40 flex items-center justify-center text-slate-500 text-sm">
+									Chart not cached yet - try refreshing later
+								</div>
+							{/if}
 						</div>
 
 						<!-- Transactions -->
 						<div class="p-6 rounded-xl bg-gradient-to-br from-slate-900/40 to-slate-800/60 backdrop-blur-xl border border-white/5 border-t-white/10 shadow-2xl">
 							<h2 class="text-lg font-bold text-white mb-5">Transactions</h2>
-							<div class="py-10 text-center text-slate-500 text-sm">
-								No transactions
-							</div>
+							{#if loadingTransactions}
+								<div class="py-10 text-center text-slate-500 text-sm">
+									Loading transactions...
+								</div>
+							{:else if transactions.length > 0}
+								<div class="space-y-2">
+									{#each transactions as tx}
+										<div class="flex items-center gap-3 p-3 rounded-lg bg-black/20 border border-white/5 hover:bg-white/5 transition">
+											<div class="w-8 h-8 rounded-full flex items-center justify-center {tx.type === 'sent' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}">
+												{tx.type === 'sent' ? '↑' : '↓'}
+											</div>
+											<div class="flex-1 min-w-0">
+												<div class="text-sm font-medium text-white">{tx.type === 'sent' ? 'Sent' : 'Received'}</div>
+												<div class="text-xs text-slate-500 truncate">{tx.hash}</div>
+											</div>
+											<div class="text-right">
+												<div class="text-sm font-semibold {tx.type === 'sent' ? 'text-red-400' : 'text-green-400'}">
+													{tx.type === 'sent' ? '-' : '+'}{tx.value} {selectedAsset?.symbol}
+												</div>
+												<div class="text-xs text-slate-500">
+													{new Date(tx.timestamp).toLocaleDateString()}
+												</div>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<div class="py-10 text-center text-slate-500 text-sm">
+									No transactions
+								</div>
+							{/if}
 						</div>
 					{:else}
 						<!-- Send Form -->

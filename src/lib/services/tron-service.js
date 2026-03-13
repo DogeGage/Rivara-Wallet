@@ -5,6 +5,8 @@
  * https://github.com/dominic84p/Rivara-Wallet
  */
 
+import { priceService } from './price-service';
+
 // Tron Service - Handle TRX balance and address derivation
 class TronService {
     constructor() {
@@ -41,11 +43,9 @@ class TronService {
     async getBalanceUSD(address) {
         const trxBalance = await this.getBalance(address);
 
-        // Get TRX price from CoinGecko via worker
+        // Get TRX price from centralized price service
         try {
-            const response = await fetch('https://api.rivarawallet.xyz/api/coingecko/prices?ids=tron');
-            const data = await response.json();
-            const trxPrice = data.tron?.usd || 0;
+            const trxPrice = await priceService.getPrice('tron');
 
             // Only update cached price if we got a valid price
             if (trxPrice > 0) {

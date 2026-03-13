@@ -28,156 +28,150 @@ class TokenScanner {
         };
     }
 
-    // Scan Ethereum address for ERC-20 tokens
+    // Scan Ethereum address for ERC-20 tokens using Ankr Advanced API via worker
     async scanEthereumTokens(address) {
         try {
-            console.log('Scanning Ethereum tokens for:', address);
+            console.log('Scanning Ethereum tokens via Worker Ankr endpoint for:', address);
 
-            // Use Etherscan API to get token list
-            const response = await fetch(
-                `https://api.etherscan.io/api?module=account&action=tokentx&address=${address}&page=1&offset=100&sort=desc`
-            );
-            const data = await response.json();
-
-            if (data.status !== '1' || !data.result) {
-                console.log('No Ethereum tokens found');
-                return [];
-            }
-
-            // Get unique token contracts
-            const tokenContracts = new Set();
-            data.result.forEach(tx => {
-                tokenContracts.add(tx.contractAddress);
+            const response = await fetch('https://api.rivarawallet.xyz/api/ankr/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    walletAddress: address,
+                    blockchains: ['eth']
+                })
             });
 
-            // Fetch balance for each token
-            const tokens = [];
-            for (const contractAddress of tokenContracts) {
-                try {
-                    const tokenData = await this.getERC20TokenData(address, contractAddress, 'ethereum');
-                    if (tokenData && parseFloat(tokenData.balance) > 0) {
-                        tokens.push(tokenData);
-                    }
-                } catch (error) {
-                    console.error('Error fetching token data:', error);
-                }
+            if (!response.ok) {
+                throw new Error(`Worker returned ${response.status}`);
             }
 
-            this.detectedTokens.ethereum = tokens;
-            console.log('Found', tokens.length, 'Ethereum tokens');
-            return tokens;
+            const data = await response.json();
+            const assets = data?.assets || [];
 
+            const tokens = assets
+                .filter(asset => asset.blockchain === 'eth' && asset.contractAddress)
+                .map(asset => ({
+                    address,
+                    contractAddress: asset.contractAddress,
+                    name: asset.tokenName || '',
+                    symbol: asset.tokenSymbol || '',
+                    balance: parseFloat(asset.balance || '0').toFixed(6),
+                    balanceUSD: parseFloat(asset.balanceUsd || '0').toFixed(2),
+                    decimals: asset.decimals || 18,
+                    network: 'ethereum',
+                    transactions: []
+                }));
+
+            this.detectedTokens.ethereum = tokens;
+            console.log('Found', tokens.length, 'Ethereum tokens via Worker');
+            return tokens;
         } catch (error) {
             console.error('Ethereum token scan error:', error);
             return [];
         }
     }
 
-    // Scan Polygon address for tokens
+    // Scan Polygon address for tokens using Ankr Advanced API via worker
     async scanPolygonTokens(address) {
         try {
-            console.log('Scanning Polygon tokens for:', address);
+            console.log('Scanning Polygon tokens via Worker Ankr endpoint for:', address);
 
-            // Use Polygonscan API to get token list
-            const response = await fetch(
-                `https://api.polygonscan.com/api?module=account&action=tokentx&address=${address}&page=1&offset=100&sort=desc`
-            );
-            const data = await response.json();
-
-            if (data.status !== '1' || !data.result) {
-                console.log('No Polygon tokens found');
-                return [];
-            }
-
-            // Get unique token contracts
-            const tokenContracts = new Set();
-            data.result.forEach(tx => {
-                tokenContracts.add(tx.contractAddress);
+            const response = await fetch('https://api.rivarawallet.xyz/api/ankr/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    walletAddress: address,
+                    blockchains: ['polygon']
+                })
             });
 
-            // Fetch balance for each token
-            const tokens = [];
-            for (const contractAddress of tokenContracts) {
-                try {
-                    const tokenData = await this.getERC20TokenData(address, contractAddress, 'polygon');
-                    if (tokenData && parseFloat(tokenData.balance) > 0) {
-                        tokens.push(tokenData);
-                    }
-                } catch (error) {
-                    console.error('Error fetching token data:', error);
-                }
+            if (!response.ok) {
+                throw new Error(`Worker returned ${response.status}`);
             }
 
-            this.detectedTokens.polygon = tokens;
-            console.log('Found', tokens.length, 'Polygon tokens');
-            return tokens;
+            const data = await response.json();
+            const assets = data?.assets || [];
 
+            const tokens = assets
+                .filter(asset => asset.blockchain === 'polygon' && asset.contractAddress)
+                .map(asset => ({
+                    address,
+                    contractAddress: asset.contractAddress,
+                    name: asset.tokenName || '',
+                    symbol: asset.tokenSymbol || '',
+                    balance: parseFloat(asset.balance || '0').toFixed(6),
+                    balanceUSD: parseFloat(asset.balanceUsd || '0').toFixed(2),
+                    decimals: asset.decimals || 18,
+                    network: 'polygon',
+                    transactions: []
+                }));
+
+            this.detectedTokens.polygon = tokens;
+            console.log('Found', tokens.length, 'Polygon tokens via Worker');
+            return tokens;
         } catch (error) {
             console.error('Polygon token scan error:', error);
             return [];
         }
     }
 
-    // Get ERC-20 token data (balance, name, symbol)
+    // Get ERC-20 token data (balance, name, symbol) - now uses Worker Ankr endpoint
     async getERC20TokenData(walletAddress, contractAddress, network) {
         try {
-            const { ethers } = window.cryptoLibs;
+            console.log(`Fetching ${network} token ${contractAddress} via Worker`);
 
-            // Set RPC based on network
-            const rpcUrl = network === 'ethereum'
-                ? 'https://eth.llamarpc.com'
-                : 'https://polygon-rpc.com';
+            const response = await fetch('https://api.rivarawallet.xyz/api/ankr/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    walletAddress: walletAddress,
+                    blockchains: [network === 'ethereum' ? 'eth' : 'polygon']
+                })
+            });
 
-            const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-
-            // ERC-20 ABI
-            const abi = [
-                "function balanceOf(address account) view returns (uint256)",
-                "function decimals() view returns (uint8)",
-                "function symbol() view returns (string)",
-                "function name() view returns (string)"
-            ];
-
-            const contract = new ethers.Contract(contractAddress, abi, provider);
-
-            // Fetch token info
-            const [balance, decimals, symbol, name] = await Promise.all([
-                contract.balanceOf(walletAddress),
-                contract.decimals(),
-                contract.symbol(),
-                contract.name()
-            ]);
-
-            const formattedBalance = ethers.utils.formatUnits(balance, decimals);
-
-            // Try to get price from CoinGecko
-            let priceUSD = 0;
-            try {
-                const priceResponse = await fetch(
-                    `https://api.coingecko.com/api/v3/simple/token_price/${network === 'ethereum' ? 'ethereum' : 'polygon-pos'}?contract_addresses=${contractAddress}&vs_currencies=usd`
-                );
-                const priceData = await priceResponse.json();
-                priceUSD = priceData[contractAddress.toLowerCase()]?.usd || 0;
-            } catch (e) {
-                console.log('Could not fetch price for', symbol);
+            if (!response.ok) {
+                throw new Error(`Worker returned ${response.status}`);
             }
 
-            const balanceUSD = (parseFloat(formattedBalance) * priceUSD).toFixed(2);
+            const data = await response.json();
+            const assets = data?.assets || [];
+
+            // Find the specific token in the response
+            const token = assets.find(asset => 
+                asset.contractAddress?.toLowerCase() === contractAddress.toLowerCase()
+            );
+
+            if (!token) {
+                // Token not found or has zero balance
+                return {
+                    address: walletAddress,
+                    contractAddress: contractAddress,
+                    name: contractAddress === '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' || 
+                          contractAddress === '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' ? 'USD Coin' : 'Unknown',
+                    symbol: contractAddress === '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' || 
+                            contractAddress === '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' ? 'USDC' : 'UNKNOWN',
+                    balance: '0.000000',
+                    balanceUSD: '0.00',
+                    decimals: 6,
+                    network: network,
+                    transactions: []
+                };
+            }
 
             return {
                 address: walletAddress,
                 contractAddress: contractAddress,
-                name: name,
-                symbol: symbol,
-                balance: parseFloat(formattedBalance).toFixed(6),
-                balanceUSD: balanceUSD,
-                decimals: decimals,
+                name: token.tokenName || 'Unknown',
+                symbol: token.tokenSymbol || 'UNKNOWN',
+                balance: parseFloat(token.balance || '0').toFixed(6),
+                balanceUSD: parseFloat(token.balanceUsd || '0').toFixed(2),
+                decimals: token.decimals || 18,
                 network: network,
                 transactions: []
             };
-
         } catch (error) {
-            console.error('Error getting token data:', error);
+            console.error('Failed to fetch token data via Worker:', error);
             return null;
         }
     }

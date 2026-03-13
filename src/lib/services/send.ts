@@ -105,6 +105,12 @@ async function sendPolygon(toAddress: string, amount: string): Promise<string> {
 	return send(toAddress, amount);
 }
 
+/** Send USDC (ERC-20) on Ethereum or Polygon. Used by exchange when swapping from USDC. */
+export async function sendUSDC(chain: 'ethereum' | 'polygon', toAddress: string, amount: string): Promise<string> {
+	const { sendUSDC: send } = await import('./send/evm-send.js');
+	return send(chain, toAddress, amount);
+}
+
 /**
  * SECURITY FIX 5: Checksum-based address validation for all chains
  */

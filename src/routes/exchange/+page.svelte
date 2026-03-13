@@ -5,25 +5,27 @@
 	import { wallet, isUnlocked } from '$lib/stores/wallet';
 	import { walletService } from '$lib/services/wallet-service';
 	import { changeNowService } from '$lib/services/changenow-service';
-	import { sendTransaction, validateAddress } from '$lib/services/send';
+	import { sendTransaction, sendUSDC, validateAddress } from '$lib/services/send';
 	import type { CryptoChain } from '$lib/types';
 
 	// View state: 'form' or 'status'
 	let view = 'form';
 
-	// Exchange form state
+	// Exchange form state (min amounts per pair; 0 = no minimum)
 	const MIN_AMOUNTS: Record<string, Record<string, number>> = {
-		'BTC': { 'ETH': 0, 'SOL': 0, 'XTZ': 0, 'TRX': 0, 'DOGE': 0, 'LTC': 0, 'POL': 0 },
-		'DOGE': { 'BTC': 100, 'ETH': 100, 'SOL': 100, 'XTZ': 100, 'TRX': 100, 'LTC': 100, 'POL': 100 },
-		'LTC': { 'BTC': 0.01, 'ETH': 0.01, 'SOL': 0.01, 'XTZ': 0.01, 'TRX': 0.01, 'DOGE': 0.01, 'POL': 0.01 },
-		'ETH': { 'BTC': 0.01, 'SOL': 0.01, 'XTZ': 0.01, 'TRX': 0.01, 'DOGE': 0.01, 'LTC': 0.01, 'POL': 0.01 },
-		'POL': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1 },
-		'SOL': { 'BTC': 0.000525, 'ETH': 0.000525, 'XTZ': 0.000525, 'TRX': 0.000525, 'DOGE': 0.000525, 'LTC': 0.000525, 'POL': 0.000525 },
-		'XTZ': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1 },
-		'TRX': { 'BTC': 10, 'ETH': 10, 'SOL': 10, 'XTZ': 10, 'DOGE': 10, 'LTC': 10, 'POL': 10 }
+		'BTC': { 'ETH': 0, 'SOL': 0, 'XTZ': 0, 'TRX': 0, 'DOGE': 0, 'LTC': 0, 'POL': 0, 'USDC_ETH': 0, 'USDC_POL': 0 },
+		'DOGE': { 'BTC': 100, 'ETH': 100, 'SOL': 100, 'XTZ': 100, 'TRX': 100, 'LTC': 100, 'POL': 100, 'USDC_ETH': 100, 'USDC_POL': 100 },
+		'LTC': { 'BTC': 0.01, 'ETH': 0.01, 'SOL': 0.01, 'XTZ': 0.01, 'TRX': 0.01, 'DOGE': 0.01, 'POL': 0.01, 'USDC_ETH': 0.01, 'USDC_POL': 0.01 },
+		'ETH': { 'BTC': 0.01, 'SOL': 0.01, 'XTZ': 0.01, 'TRX': 0.01, 'DOGE': 0.01, 'LTC': 0.01, 'POL': 0.01, 'USDC_ETH': 0.01, 'USDC_POL': 0.01 },
+		'POL': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'USDC_ETH': 1, 'USDC_POL': 1 },
+		'SOL': { 'BTC': 0.000525, 'ETH': 0.000525, 'XTZ': 0.000525, 'TRX': 0.000525, 'DOGE': 0.000525, 'LTC': 0.000525, 'POL': 0.000525, 'USDC_ETH': 0.000525, 'USDC_POL': 0.000525 },
+		'XTZ': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1, 'USDC_ETH': 1, 'USDC_POL': 1 },
+		'TRX': { 'BTC': 10, 'ETH': 10, 'SOL': 10, 'XTZ': 10, 'DOGE': 10, 'LTC': 10, 'POL': 10, 'USDC_ETH': 10, 'USDC_POL': 10 },
+		'USDC_ETH': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1, 'USDC_POL': 1 },
+		'USDC_POL': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1, 'USDC_ETH': 1 }
 	};
 
-	// Symbol to chain name mapping for send service
+	// Symbol to chain for address validation and send (USDC uses same chain as ETH/POL)
 	const SYMBOL_TO_CHAIN: Record<string, CryptoChain> = {
 		'BTC': 'bitcoin',
 		'DOGE': 'dogecoin',
@@ -32,7 +34,9 @@
 		'POL': 'polygon',
 		'SOL': 'solana',
 		'XTZ': 'tezos',
-		'TRX': 'tron'
+		'TRX': 'tron',
+		'USDC_ETH': 'ethereum',
+		'USDC_POL': 'polygon'
 	};
 
 	let fromCurrency = 'BTC';
@@ -72,6 +76,8 @@
 	];
 
 	$: currentWallet = $wallet;
+	$: ethUsdc = currentWallet?.detectedTokens?.ethereum?.find((t: any) => t.symbol === 'USDC');
+	$: polyUsdc = currentWallet?.detectedTokens?.polygon?.find((t: any) => t.symbol === 'USDC');
 	$: currencies = [
 		{ symbol: 'BTC', name: 'Bitcoin', balance: currentWallet?.bitcoin?.balance || '0', address: currentWallet?.bitcoin?.address || '' },
 		{ symbol: 'DOGE', name: 'Dogecoin', balance: currentWallet?.dogecoin?.balance || '0', address: currentWallet?.dogecoin?.address || '' },
@@ -80,13 +86,15 @@
 		{ symbol: 'POL', name: 'Polygon', balance: currentWallet?.polygon?.balance || '0', address: currentWallet?.polygon?.address || '' },
 		{ symbol: 'SOL', name: 'Solana', balance: currentWallet?.solana?.balance || '0', address: currentWallet?.solana?.address || '' },
 		{ symbol: 'XTZ', name: 'Tezos', balance: currentWallet?.tezos?.balance || '0', address: currentWallet?.tezos?.address || '' },
-		{ symbol: 'TRX', name: 'Tron', balance: currentWallet?.tron?.balance || '0', address: currentWallet?.tron?.address || '' }
+		{ symbol: 'TRX', name: 'Tron', balance: currentWallet?.tron?.balance || '0', address: currentWallet?.tron?.address || '' },
+		{ symbol: 'USDC_ETH', name: 'USD Coin (Ethereum)', balance: ethUsdc?.balance || '0', address: currentWallet?.ethereum?.address || '' },
+		{ symbol: 'USDC_POL', name: 'USD Coin (Polygon)', balance: polyUsdc?.balance || '0', address: currentWallet?.polygon?.address || '' }
 	];
 
 	$: fromCrypto = currencies.find(c => c.symbol === fromCurrency);
 	$: toCrypto = currencies.find(c => c.symbol === toCurrency);
 	$: minAmount = MIN_AMOUNTS[fromCurrency]?.[toCurrency] || 0;
-	$: canExchange = fromAmount && !estimating && !error && !sending && parseFloat(fromAmount) >= minAmount && 
+	$: canExchange = fromAmount && toAmount && !estimating && !error && !sending && parseFloat(fromAmount) >= minAmount && 
 		parseFloat(fromAmount) <= parseFloat(fromCrypto?.balance || '0') &&
 		(!customAddress || (recipientAddress && isValidAddress(recipientAddress, toCurrency)));
 	$: currentStepIndex = steps.findIndex(s => s.id === status);
@@ -135,8 +143,15 @@
 		goto('/unlock');
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		if (!$isUnlocked) return;
+
+		// Load wallet into store and hydrate with any cached balances for instant details
+		const walletData = walletService.getWallet();
+		if (walletData) {
+			wallet.set(walletData);
+			await walletService.hydrateWalletFromCache();
+		}
 
 		// Cleanup function
 		return () => {
@@ -309,19 +324,24 @@
 				throw new Error('Invalid payin address from exchange service');
 			}
 
-			// Send using the unified send service
-			const chain = SYMBOL_TO_CHAIN[fromCurrency];
-			if (!chain) {
-				throw new Error(`Unsupported currency: ${fromCurrency}`);
+			let hash: string;
+
+			if (fromCurrency === 'USDC_ETH' || fromCurrency === 'USDC_POL') {
+				const chain = fromCurrency === 'USDC_ETH' ? 'ethereum' : 'polygon';
+				console.log('Auto-sending USDC to exchange:', { chain, toAddr, amount });
+				hash = await sendUSDC(chain, toAddr, amount);
+			} else {
+				const chain = SYMBOL_TO_CHAIN[fromCurrency];
+				if (!chain) {
+					throw new Error(`Unsupported currency: ${fromCurrency}`);
+				}
+				console.log('Auto-sending to exchange:', { chain, toAddr, amount });
+				hash = await sendTransaction({
+					chain,
+					toAddress: toAddr,
+					amount
+				});
 			}
-
-			console.log('Auto-sending to exchange:', { chain, toAddr, amount });
-
-			const hash = await sendTransaction({
-				chain,
-				toAddress: toAddr,
-				amount
-			});
 
 			if (hash) {
 				// Switch to status view
@@ -377,7 +397,7 @@
 				statusMessage = 'Exchanging your crypto...';
 			} else if (result.status === 'sending') {
 				status = 'sending';
-				statusMessage = `Sending ${toCurrency} to your wallet...`;
+				statusMessage = `Sending ${toCrypto?.name ?? toCurrency} to your wallet...`;
 			} else if (result.status === 'finished') {
 				status = 'finished';
 				statusMessage = '🎉 Exchange complete!';
@@ -488,7 +508,7 @@
 					<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
 						<div class="flex items-center justify-between mb-4 flex-wrap gap-1">
 							<h3 class="text-white font-semibold">You Send</h3>
-							<span class="text-xs md:text-sm text-slate-400">{fromCrypto?.balance || '0'} {fromCurrency} available</span>
+							<span class="text-xs md:text-sm text-slate-400">{fromCrypto?.balance ?? '0'} {fromCrypto?.name ?? fromCurrency} available</span>
 						</div>
 						<div class="flex flex-col sm:flex-row gap-3">
 							<input 
@@ -565,7 +585,7 @@
 							<input 
 								type="text"
 								class="mt-3 w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
-								placeholder="Paste {toCurrency} address"
+								placeholder="Paste {toCrypto?.name ?? toCurrency} address"
 								bind:value={recipientAddress}
 							/>
 						{/if}
@@ -576,19 +596,31 @@
 				<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 h-fit">
 					<h4 class="text-white font-semibold mb-4">Exchange Details</h4>
 					
-					{#if toAmount && fromAmount}
+					{#if fromAmount && parseFloat(fromAmount) > 0}
 						<div class="space-y-3 mb-6">
-							<div class="flex justify-between text-sm">
-								<span class="text-slate-400">Rate</span>
-								<span class="text-white">1 {fromCurrency} ≈ {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(6)} {toCurrency}</span>
-							</div>
+							{#if toAmount && parseFloat(toAmount) > 0}
+								<div class="flex justify-between text-sm">
+									<span class="text-slate-400">Rate</span>
+									<span class="text-white">1 {fromCrypto?.name ?? fromCurrency} ≈ {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(6)} {toCrypto?.name ?? toCurrency}</span>
+								</div>
+							{:else if estimating}
+								<div class="flex justify-between text-sm">
+									<span class="text-slate-400">Rate</span>
+									<span class="text-slate-400">Estimating…</span>
+								</div>
+							{:else}
+								<div class="flex justify-between text-sm">
+									<span class="text-slate-400">Rate</span>
+									<span class="text-amber-400/90 text-xs">Rate unavailable for this pair</span>
+								</div>
+							{/if}
 							<div class="flex justify-between text-sm">
 								<span class="text-slate-400">You Send</span>
-								<span class="text-white">{fromAmount} {fromCurrency}</span>
+								<span class="text-white">{fromAmount} {fromCrypto?.name ?? fromCurrency}</span>
 							</div>
 							<div class="flex justify-between text-sm">
 								<span class="text-slate-400">You Receive</span>
-								<span class="text-white">{toAmount} {toCurrency}</span>
+								<span class="text-white">{toAmount ? `${toAmount} ${toCrypto?.name ?? toCurrency}` : '—'}</span>
 							</div>
 							<div class="flex justify-between text-sm">
 								<span class="text-slate-400">Network Fee</span>
@@ -694,12 +726,12 @@
 
 						<div class="flex justify-between items-center">
 							<span class="text-slate-400 text-sm">Sending</span>
-							<span class="text-white font-semibold text-sm">{fromAmount} {fromCurrency}</span>
+							<span class="text-white font-semibold text-sm">{fromAmount} {fromCrypto?.name ?? fromCurrency}</span>
 						</div>
 
 						<div class="flex justify-between items-center">
 							<span class="text-slate-400 text-sm">Receiving</span>
-							<span class="text-white font-semibold text-sm">{toAmount} {toCurrency}</span>
+							<span class="text-white font-semibold text-sm">{toAmount} {toCrypto?.name ?? toCurrency}</span>
 						</div>
 
 						<div class="flex justify-between items-center gap-2">
