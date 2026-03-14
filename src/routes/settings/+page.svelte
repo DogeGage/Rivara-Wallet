@@ -11,11 +11,22 @@
 	let showPasswordModal = false;
 	let showRemoveModal = false;
 	let showSeedModal = false;
+	let showDuressModal = false;
 	let password = '';
 	let error = '';
 	let success = '';
 	let downloading = false;
 	let seedPhrase = '';
+	let duressPassword = '';
+	let duressPasswordConfirm = '';
+	let hasDuressPassword = false;
+
+	// Change password
+	let showChangePasswordModal = false;
+	let currentPassword = '';
+	let newPassword = '';
+	let newPasswordConfirm = '';
+	let changingPassword = false;
 
 	// Currency
 	let selectedCurrency = 'USD';
@@ -62,6 +73,9 @@
 		
 		const savedDelay = localStorage.getItem('autoLockDelay');
 		if (savedDelay) autoLockMinutes = parseInt(savedDelay) / 60 / 1000;
+		
+		// Check if duress password is set
+		hasDuressPassword = encryptionService.hasDuressPassword();
 	});
 
 	function setCurrency(val: string) {
@@ -129,6 +143,87 @@
 		localStorage.removeItem('preferredCurrency');
 		sessionStorage.clear();
 		goto('/');
+	}
+	
+	function showDuressSetup() {
+		showDuressModal = true;
+		duressPassword = '';
+		duressPasswordConfirm = '';
+		error = '';
+	}
+	
+	function setDuressPassword() {
+		if (!duressPassword) {
+			error = 'Please enter a duress password';
+			return;
+		}
+		if (duressPassword.length < 8) {
+			error = 'Duress password must be at least 8 characters';
+			return;
+		}
+		if (duressPassword !== duressPasswordConfirm) {
+			error = 'Passwords do not match';
+			return;
+		}
+		
+		encryptionService.setDuressPassword(duressPassword);
+		hasDuressPassword = true;
+		success = 'Duress password set successfully';
+		showDuressModal = false;
+		duressPassword = '';
+		duressPasswordConfirm = '';
+		setTimeout(() => success = '', 3000);
+	}
+	
+	function removeDuressPassword() {
+		encryptionService.clearDuressPassword();
+		hasDuressPassword = false;
+		success = 'Duress password removed';
+		setTimeout(() => success = '', 3000);
+	}
+
+	function saveAutoLock() {
+		localStorage.setItem('autoLockEnabled', autoLockEnabled.toString());
+		localStorage.setItem('autoLockDelay', (autoLockMinutes * 60 * 1000).toString());
+		success = 'Auto-lock settings saved';
+		setTimeout(() => success = '', 2000);
+	}
+
+	function showChangePassword() {
+		showChangePasswordModal = true;
+		currentPassword = '';
+		newPassword = '';
+		newPasswordConfirm = '';
+		error = '';
+	}
+
+	async function changePassword() {
+		if (!currentPassword) { error = 'Enter your current password'; return; }
+		if (!newPassword) { error = 'Enter a new password'; return; }
+		if (newPassword.length < 12) { error = 'New password must be at least 12 characters'; return; }
+		if (newPassword !== newPasswordConfirm) { error = 'New passwords do not match'; return; }
+		if (newPassword === currentPassword) { error = 'New password must be different from current'; return; }
+
+		changingPassword = true;
+		error = '';
+		try {
+			// Decrypt with current password
+			const encrypted = localStorage.getItem('encryptedWallet');
+			if (!encrypted) { error = 'No wallet found'; return; }
+			const seed = await encryptionService.decrypt(encrypted, currentPassword);
+			// Re-encrypt with new password
+			await encryptionService.saveWallet(seed, newPassword);
+			// Update session password
+			sessionStorage.setItem('_walletSessionPw', newPassword);
+			success = 'Password changed successfully';
+			showChangePasswordModal = false;
+			currentPassword = ''; newPassword = ''; newPasswordConfirm = '';
+			setTimeout(() => success = '', 3000);
+		} catch {
+			error = 'Current password is incorrect';
+		} finally {
+			changingPassword = false;
+		}
 	}
 </script>
 
@@ -209,7 +304,11 @@
 								<span>Wallet locks automatically after inactivity</span>
 							</div>
 							<div class="item-actions">
-								<span class="settings-badge">15 min</span>
+								<select class="settings-select" bind:value={autoLockMinutes} on:change={saveAutoLock}>
+									{#each lockTimeOptions as m}
+										<option value={m}>{m} min</option>
+									{/each}
+								</select>
 							</div>
 						</div>
 
@@ -240,7 +339,7 @@
 							</div>
 							<div class="item-actions">
 								<label class="toggle-switch">
-									<input type="checkbox" checked disabled />
+									<input type="checkbox" bind:checked={autoLockEnabled} on:change={saveAutoLock} />
 									<span class="toggle-slider"></span>
 								</label>
 							</div>
@@ -251,13 +350,26 @@
 								<span>How long before the wallet locks itself</span>
 							</div>
 							<div class="item-actions">
-								<span class="settings-badge">15 min</span>
+								<select class="settings-select" bind:value={autoLockMinutes} on:change={saveAutoLock} disabled={!autoLockEnabled}>
+									{#each lockTimeOptions as m}
+										<option value={m}>{m} min</option>
+									{/each}
+								</select>
 							</div>
 						</div>
 					</div>
 
 					<div class="settings-card mt-6">
 						<h3 class="card-subtitle">🔑 Password Management</h3>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Change Password</strong>
+								<span>Update your wallet encryption password</span>
+							</div>
+							<div class="item-actions">
+								<button class="btn-secondary" on:click={showChangePassword}>Change</button>
+							</div>
+						</div>
 						<div class="settings-item">
 							<div class="item-info">
 								<strong>Password Requirements</strong>
@@ -296,6 +408,24 @@
 							</div>
 							<div class="item-actions">
 								<span class="settings-badge" style="color: #4ade80; border-color: rgba(74, 222, 128, 0.2); background: rgba(74, 222, 128, 0.08);">Active</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="settings-card mt-6">
+						<h3 class="card-subtitle">🚨 Duress Protection</h3>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Duress Password</strong>
+								<span>Set an alternate password that shows a fake wallet with small balances for emergency situations</span>
+							</div>
+							<div class="item-actions">
+								{#if hasDuressPassword}
+									<span class="settings-badge" style="color: #4ade80; border-color: rgba(74, 222, 128, 0.2); background: rgba(74, 222, 128, 0.08);">Active</span>
+									<button class="btn-danger" on:click={removeDuressPassword}>Remove</button>
+								{:else}
+									<button class="btn-primary" on:click={showDuressSetup}>Set Up</button>
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -492,6 +622,64 @@
 				<button class="flex-1 px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition" on:click={() => { showPasswordModal = false; password = ''; error = ''; }} disabled={downloading}>Cancel</button>
 				<button class="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25 disabled:opacity-50" on:click={downloadBackup} disabled={downloading}>
 					{downloading ? 'Downloading...' : 'Download'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Duress Password Modal -->
+{#if showDuressModal}
+	<div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+		<div class="bg-stone-900 border border-white/10 rounded-2xl p-6 max-w-md w-full">
+			<h3 class="text-xl font-bold text-white mb-4">Set Duress Password</h3>
+			<p class="text-sm text-slate-400 mb-4">Create an alternate password that will show a fake wallet with small balances. Use this in emergency situations where you're forced to unlock your wallet.</p>
+			<div class="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+				<p class="text-amber-200 text-sm"><strong>⚠️ Important:</strong> Make sure this password is different from your real password and easy to remember under stress.</p>
+			</div>
+			{#if error}
+				<div class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+					<p class="text-red-200 text-sm">{error}</p>
+				</div>
+			{/if}
+			<input type="password" bind:value={duressPassword} placeholder="Enter duress password"
+				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-3" />
+			<input type="password" bind:value={duressPasswordConfirm} placeholder="Confirm duress password"
+				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-4"
+				on:keydown={(e) => e.key === 'Enter' && setDuressPassword()} />
+			<div class="flex gap-3">
+				<button class="flex-1 px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition" on:click={() => { showDuressModal = false; duressPassword = ''; duressPasswordConfirm = ''; error = ''; }}>Cancel</button>
+				<button class="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25" on:click={setDuressPassword}>Set Password</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Change Password Modal -->
+{#if showChangePasswordModal}
+	<div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+		<div class="bg-stone-900 border border-white/10 rounded-2xl p-6 max-w-md w-full">
+			<h3 class="text-xl font-bold text-white mb-4">Change Password</h3>
+			<p class="text-sm text-slate-400 mb-4">Enter your current password and choose a new one.</p>
+			{#if error}
+				<div class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+					<p class="text-red-200 text-sm">{error}</p>
+				</div>
+			{/if}
+			<input type="password" bind:value={currentPassword} placeholder="Current password"
+				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-3" />
+			<input type="password" bind:value={newPassword} placeholder="New password (12+ characters)"
+				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-3" />
+			<input type="password" bind:value={newPasswordConfirm} placeholder="Confirm new password"
+				class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none mb-4"
+				on:keydown={(e) => e.key === 'Enter' && changePassword()} />
+			<div class="flex gap-3">
+				<button class="flex-1 px-4 py-3 bg-stone-800 text-white font-semibold rounded-lg hover:bg-stone-700 transition"
+					disabled={changingPassword}
+					on:click={() => { showChangePasswordModal = false; error = ''; }}>Cancel</button>
+				<button class="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25 disabled:opacity-50"
+					disabled={changingPassword} on:click={changePassword}>
+					{changingPassword ? 'Changing...' : 'Change Password'}
 				</button>
 			</div>
 		</div>

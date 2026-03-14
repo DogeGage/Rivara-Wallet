@@ -39,6 +39,7 @@ Thumbs.db
 # Wrangler files
 .wrangler/
 worker.js
+wrangler.toml
 wrangler.jsonc
 
 # Misc

@@ -154,8 +154,37 @@
 		localStorage.setItem('selectedCurrency', target.value);
 	}
 
-	function showSend() { showingSend = true; }
+	function showSend() { showingSend = true; sendStage = 'form'; sendError = ''; }
 	function showReceive() { showingSend = false; }
+
+	// Send flow state
+	let sendAddress = '';
+	let sendAmount = '';
+	let sendStage: 'form' | 'confirm' | 'sending' | 'error' = 'form';
+	let sendError = '';
+
+	function reviewTransaction() {
+		if (!sendAddress.trim()) { sendError = 'Please enter a recipient address'; return; }
+		if (!sendAmount || parseFloat(sendAmount) <= 0) { sendError = 'Please enter a valid amount'; return; }
+		sendError = '';
+		sendStage = 'confirm';
+	}
+
+	async function confirmSend() {
+		sendStage = 'sending';
+		sendError = '';
+		// Simulate processing delay then fail with servers down
+		await new Promise(r => setTimeout(r, 2200));
+		sendStage = 'error';
+		sendError = 'Sending servers are currently unavailable. Please try again later.';
+	}
+
+	function resetSendForm() {
+		sendStage = 'form';
+		sendError = '';
+		sendAddress = '';
+		sendAmount = '';
+	}
 
 	async function loadTransactions(assetId: string) {
 		if (!selectedAsset) return;
@@ -571,53 +600,97 @@
 						<!-- Send Form -->
 						<div class="p-8 rounded-xl bg-gradient-to-br from-slate-900/40 to-slate-800/60 backdrop-blur-xl border border-white/5 border-t-white/10 shadow-2xl">
 							<div class="max-w-2xl">
-								<div class="mb-6">
-									<label class="block text-sm text-slate-400 mb-2.5 font-semibold">Recipient Address</label>
-									<input 
-										type="text" 
-										placeholder="Enter {selectedAsset.symbol} address" 
-										class="w-full px-4 py-3.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
-									/>
-								</div>
-
-								<div class="mb-6">
-									<label class="block text-sm text-slate-400 mb-2.5 font-semibold">Amount</label>
-									<div class="relative">
+								{#if sendStage === 'form'}
+									<div class="mb-6">
+										<label class="block text-sm text-slate-400 mb-2.5 font-semibold">Recipient Address</label>
 										<input 
-											type="number" 
-											placeholder="0.00" 
-											step="any"
-											class="w-full px-4 py-3.5 pr-20 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
+											type="text"
+											bind:value={sendAddress}
+											placeholder="Enter {selectedAsset.symbol} address" 
+											class="w-full px-4 py-3.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
 										/>
-										<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-sm">{selectedAsset.symbol}</span>
 									</div>
-									<div class="flex items-center justify-between mt-2 text-sm text-slate-500">
-										<span>Available: {selectedAsset.balance} {selectedAsset.symbol}</span>
-										<button class="px-2.5 py-1 border border-cyan-500/50 text-cyan-400 rounded-md hover:bg-cyan-500/10 transition font-medium text-xs">MAX</button>
-									</div>
-								</div>
 
-								<div class="mb-6">
-									<label class="block text-sm text-slate-400 mb-2.5 font-semibold">Network Fee</label>
-									<div class="p-3.5 bg-black/20 border border-white/10 rounded-lg">
-										<span class="text-slate-400 text-sm">Estimated fee: ~$0.50</span>
+									<div class="mb-6">
+										<label class="block text-sm text-slate-400 mb-2.5 font-semibold">Amount</label>
+										<div class="relative">
+											<input 
+												type="number" 
+												bind:value={sendAmount}
+												placeholder="0.00" 
+												step="any"
+												class="w-full px-4 py-3.5 pr-20 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:bg-black/40 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
+											/>
+											<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-sm">{selectedAsset.symbol}</span>
+										</div>
+										<div class="flex items-center justify-between mt-2 text-sm text-slate-500">
+											<span>Available: {selectedAsset.balance} {selectedAsset.symbol}</span>
+											<button on:click={() => sendAmount = selectedAsset.balance} class="px-2.5 py-1 border border-cyan-500/50 text-cyan-400 rounded-md hover:bg-cyan-500/10 transition font-medium text-xs">MAX</button>
+										</div>
 									</div>
-								</div>
 
-								<div class="mb-6 p-5 bg-black/20 border border-white/10 rounded-lg">
-									<div class="flex justify-between items-center py-2 border-b border-white/5 mb-2">
-										<span class="text-slate-400 text-sm">You're sending</span>
-										<span class="text-white font-semibold text-sm">0 {selectedAsset.symbol}</span>
+									<div class="mb-6">
+										<label class="block text-sm text-slate-400 mb-2.5 font-semibold">Network Fee</label>
+										<div class="p-3.5 bg-black/20 border border-white/10 rounded-lg">
+											<span class="text-slate-400 text-sm">Estimated fee: ~$0.50</span>
+										</div>
 									</div>
-									<div class="flex justify-between items-center py-2">
-										<span class="text-slate-400 text-sm">Network fee</span>
-										<span class="text-white font-semibold text-sm">~$0.50</span>
-									</div>
-								</div>
 
-								<button class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25">
-									Review Transaction
-								</button>
+									<div class="mb-6 p-5 bg-black/20 border border-white/10 rounded-lg">
+										<div class="flex justify-between items-center py-2 border-b border-white/5 mb-2">
+											<span class="text-slate-400 text-sm">You're sending</span>
+											<span class="text-white font-semibold text-sm">{sendAmount || '0'} {selectedAsset.symbol}</span>
+										</div>
+										<div class="flex justify-between items-center py-2">
+											<span class="text-slate-400 text-sm">Network fee</span>
+											<span class="text-white font-semibold text-sm">~$0.50</span>
+										</div>
+									</div>
+
+									{#if sendError}
+										<div class="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">{sendError}</div>
+									{/if}
+
+									<button on:click={reviewTransaction} class="w-full py-3.5 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25">
+										Review Transaction
+									</button>
+
+								{:else if sendStage === 'confirm'}
+									<h3 class="text-lg font-bold text-white mb-6">Confirm Transaction</h3>
+									<div class="mb-6 p-5 bg-black/20 border border-white/10 rounded-lg space-y-3">
+										<div class="flex justify-between items-start">
+											<span class="text-slate-400 text-sm">To</span>
+											<span class="text-white font-mono text-xs text-right max-w-[60%] break-all">{sendAddress}</span>
+										</div>
+										<div class="border-t border-white/5 pt-3 flex justify-between items-center">
+											<span class="text-slate-400 text-sm">Amount</span>
+											<span class="text-white font-semibold">{sendAmount} {selectedAsset.symbol}</span>
+										</div>
+										<div class="border-t border-white/5 pt-3 flex justify-between items-center">
+											<span class="text-slate-400 text-sm">Network fee</span>
+											<span class="text-white font-semibold">~$0.50</span>
+										</div>
+									</div>
+									<div class="flex gap-3">
+										<button on:click={resetSendForm} class="flex-1 py-3.5 bg-white/5 border border-white/10 text-white font-bold rounded-lg hover:bg-white/10 transition">Back</button>
+										<button on:click={confirmSend} class="flex-1 py-3.5 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25">Confirm & Send</button>
+									</div>
+
+								{:else if sendStage === 'sending'}
+									<div class="py-12 text-center">
+										<div class="w-12 h-12 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+										<p class="text-white font-semibold">Broadcasting transaction...</p>
+										<p class="text-slate-400 text-sm mt-2">Please wait</p>
+									</div>
+
+								{:else if sendStage === 'error'}
+									<div class="py-8 text-center">
+										<div class="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
+										<p class="text-white font-semibold mb-2">Transaction Failed</p>
+										<p class="text-slate-400 text-sm mb-6">{sendError}</p>
+										<button on:click={resetSendForm} class="px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-lg hover:bg-white/10 transition">Try Again</button>
+									</div>
+								{/if}
 							</div>
 						</div>
 					{/if}

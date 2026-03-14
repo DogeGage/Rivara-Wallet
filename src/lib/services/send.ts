@@ -21,6 +21,14 @@ export interface SendParams {
 export async function sendTransaction(params: SendParams): Promise<string> {
 	const { chain, toAddress, amount } = params;
 
+	// Check if in duress mode
+	const isDuressMode = sessionStorage.getItem('_isDuressMode') === 'true';
+	if (isDuressMode) {
+		// Simulate network delay
+		await new Promise(resolve => setTimeout(resolve, 2000));
+		throw new Error('Network error: Unable to connect to blockchain nodes. Please try again later.');
+	}
+
 	// Validate inputs
 	if (!toAddress || !amount) {
 		throw new Error('Missing required parameters: toAddress and amount');

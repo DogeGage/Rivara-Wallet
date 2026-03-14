@@ -7,6 +7,9 @@
 
 // Encryption Service - Encrypt/decrypt seed phrases with password
 class EncryptionService {
+    constructor() {
+        this.duressPassword = null;
+    }
     
     // Derive encryption key from password using PBKDF2
     async deriveKey(password, salt) {
@@ -105,9 +108,16 @@ class EncryptionService {
     }
     
     // Save encrypted wallet to localStorage
-    async saveWallet(seedPhrase, password) {
+    async saveWallet(seedPhrase, password, duressPassword) {
         const encrypted = await this.encrypt(seedPhrase, password);
         localStorage.setItem('encryptedWallet', encrypted);
+        
+        // Store duress password if provided
+        if (duressPassword) {
+            this.duressPassword = duressPassword;
+            localStorage.setItem('hasDuressPassword', 'true');
+        }
+        
         console.log('Wallet saved to localStorage (encrypted)');
     }
     
@@ -118,13 +128,46 @@ class EncryptionService {
             throw new Error('No wallet found in storage');
         }
         
+        // Check if this is the duress password
+        const encryptedDuress = localStorage.getItem('encryptedDuressPassword');
+        if (encryptedDuress) {
+            try {
+                const duressPlain = atob(encryptedDuress);
+                if (password === duressPlain) {
+                    return 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+                }
+            } catch {}
+        }
+        
         return await this.decrypt(encrypted, password);
     }
     
     // Clear wallet from storage
     clearWallet() {
         localStorage.removeItem('encryptedWallet');
+        localStorage.removeItem('cachedBalances');
+        this.clearDuressPassword();
         console.log('Wallet cleared from localStorage');
+    }
+    
+    // Set duress password
+    setDuressPassword(password) {
+        this.duressPassword = password;
+        // Store base64 encoded in localStorage (simple obfuscation)
+        localStorage.setItem('encryptedDuressPassword', btoa(password));
+        localStorage.setItem('hasDuressPassword', 'true');
+    }
+    
+    // Check if duress password is set
+    hasDuressPassword() {
+        return localStorage.getItem('hasDuressPassword') === 'true';
+    }
+    
+    // Clear duress password
+    clearDuressPassword() {
+        this.duressPassword = null;
+        localStorage.removeItem('encryptedDuressPassword');
+        localStorage.removeItem('hasDuressPassword');
     }
 }
 

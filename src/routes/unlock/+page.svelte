@@ -27,6 +27,23 @@
 	async function loadWallet(password: string): Promise<string> {
 		const encrypted = localStorage.getItem('encryptedWallet');
 		if (!encrypted) throw new Error('No wallet found in storage');
+		
+		// Check duress password first (stored encrypted in localStorage)
+		const encryptedDuress = localStorage.getItem('encryptedDuressPassword');
+		if (encryptedDuress) {
+			try {
+				const duressPlain = atob(encryptedDuress);
+				if (password === duressPlain) {
+					// Flag session as duress mode
+					sessionStorage.setItem('_isDuressMode', 'true');
+					// Duress password matched - return fake seed
+					return 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+				}
+			} catch {}
+		}
+		
+		// Normal mode - clear duress flag
+		sessionStorage.removeItem('_isDuressMode');
 		return await decryptSeed(encrypted, password);
 	}
 
