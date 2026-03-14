@@ -2,7 +2,7 @@
 
 A non-custodial, multi-chain cryptocurrency wallet built with SvelteKit. Your keys, your crypto.
 
-🌐 **Live:** [dogegage.com](https://dogegage.com)
+🌐 **Live:** [dogegage.com](https://rivarawallet.xyz)
 
 > ⚠️ **License:** This is **Source Available**, not Open Source. You can view, fork, and modify for personal use. You **cannot** host as a public service or redistribute commercially. See [LICENSE](LICENSE).
 
