@@ -1,9 +1,8 @@
 import { wallet, isUnlocked, balancesLoading } from '$lib/stores/wallet';
 import { get } from 'svelte/store';
 import { BitcoinService, DogecoinService, LitecoinService } from './utxo-chain-service.js';
-import { EthereumService, PolygonService, EVMChainService } from './evm-chain-service.js';
+import { EthereumService, PolygonService, EVMChainService, AvalancheService, BscService } from './evm-chain-service.js';
 import { SolanaService } from './solana-service.js';
-import { TezosService } from './tezos-service.js';
 import { TronService } from './tron-service.js';
 import { DGAGEService } from './dgage-service.js';
 // @ts-ignore - JS module
@@ -126,17 +125,19 @@ class WalletService {
 		const ethereumService = new EthereumService();
 		const polygonService = new PolygonService();
 		const solanaService = new SolanaService();
-		const tezosService = new TezosService();
 		const tronService = new TronService();
+		const avalancheService = new AvalancheService();
+		const bscService = new BscService();
 
 		// Derive addresses only — no private keys stored
 		const ethData = ethereumService.deriveAddress(mnemonic);
 		const btcData = bitcoinService.deriveAddress(mnemonic);
 		const dogeData = dogecoinService.deriveAddress(mnemonic);
 		const ltcData = litecoinService.deriveAddress(mnemonic);
-		const xtzData = await tezosService.deriveAddress(mnemonic);
 		const trxData = tronService.deriveAddress(mnemonic);
 		const solData = await solanaService.deriveAddress(mnemonic);
+		const avaxData = avalancheService.deriveAddress(mnemonic);
+		const bnbData = bscService.deriveAddress(mnemonic);
 
 		// SECURITY: Only store addresses and public data — NO mnemonic, NO privateKey
 		const newWallet = {
@@ -176,12 +177,6 @@ class WalletService {
 				balanceUSD: '0.00',
 				transactions: []
 			},
-			tezos: {
-				address: xtzData.address,
-				balance: '0.000000',
-				balanceUSD: '0.00',
-				transactions: []
-			},
 			tron: {
 				address: trxData.address,
 				balance: '0.000000',
@@ -191,6 +186,18 @@ class WalletService {
 			solana: {
 				address: solData.address,
 				balance: '0.000000',
+				balanceUSD: '0.00',
+				transactions: []
+			},
+			avalanche: {
+				address: avaxData.address,
+				balance: '0.0000',
+				balanceUSD: '0.00',
+				transactions: []
+			},
+			bsc: {
+				address: bnbData.address,
+				balance: '0.0000',
 				balanceUSD: '0.00',
 				transactions: []
 			}
@@ -239,8 +246,9 @@ class WalletService {
 			const ethereumService = new EVMChainService('ethereum');
 			const polygonService = new EVMChainService('polygon');
 			const solanaService = new SolanaService();
-			const tezosService = new TezosService();
 			const tronService = new TronService();
+			const avalancheService = new AvalancheService();
+			const bscService = new BscService();
 			const dgageService = new DGAGEService();
 
 			// Helper: update a single chain as soon as its balance resolves
@@ -278,8 +286,9 @@ class WalletService {
 				updateChain('polygon', polygonService.getBalanceUSD(currentWallet.polygon.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
 			}
 			updateChain('solana', solanaService.getBalanceUSD(currentWallet.solana.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
-			updateChain('tezos', tezosService.getBalanceUSD(currentWallet.tezos.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
 			updateChain('tron', tronService.getBalanceUSD(currentWallet.tron.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('avalanche', avalancheService.getBalanceUSD(currentWallet.avalanche.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
+			updateChain('bsc', bscService.getBalanceUSD(currentWallet.bsc.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
 			updateChain('dgage', dgageService.getBalanceUSD(currentWallet.dgage.address).catch(() => ({ balance: '0', balanceUSD: '0' })));
 
 			// USDC detection (does not block native balances)
@@ -363,10 +372,6 @@ class WalletService {
 				balance: walletData.litecoin.balance,
 				balanceUSD: walletData.litecoin.balanceUSD
 			},
-			tezos: {
-				balance: walletData.tezos.balance,
-				balanceUSD: walletData.tezos.balanceUSD
-			},
 			tron: {
 				balance: walletData.tron.balance,
 				balanceUSD: walletData.tron.balanceUSD
@@ -382,6 +387,14 @@ class WalletService {
 			dgage: {
 				balance: walletData.dgage.balance,
 				balanceUSD: walletData.dgage.balanceUSD
+			},
+			avalanche: {
+				balance: walletData.avalanche.balance,
+				balanceUSD: walletData.avalanche.balanceUSD
+			},
+			bsc: {
+				balance: walletData.bsc.balance,
+				balanceUSD: walletData.bsc.balanceUSD
 			},
 			timestamp: Date.now()
 		};
@@ -460,11 +473,6 @@ class WalletService {
 				balance: cached.litecoin?.balance ?? currentWallet.litecoin.balance,
 				balanceUSD: cached.litecoin?.balanceUSD ?? currentWallet.litecoin.balanceUSD
 			},
-			tezos: {
-				...currentWallet.tezos,
-				balance: cached.tezos?.balance ?? currentWallet.tezos.balance,
-				balanceUSD: cached.tezos?.balanceUSD ?? currentWallet.tezos.balanceUSD
-			},
 			tron: {
 				...currentWallet.tron,
 				balance: cached.tron?.balance ?? currentWallet.tron.balance,
@@ -484,6 +492,16 @@ class WalletService {
 				...currentWallet.dgage,
 				balance: cached.dgage?.balance ?? currentWallet.dgage.balance,
 				balanceUSD: cached.dgage?.balanceUSD ?? currentWallet.dgage.balanceUSD
+			},
+			avalanche: {
+				...currentWallet.avalanche,
+				balance: cached.avalanche?.balance ?? currentWallet.avalanche.balance,
+				balanceUSD: cached.avalanche?.balanceUSD ?? currentWallet.avalanche.balanceUSD
+			},
+			bsc: {
+				...currentWallet.bsc,
+				balance: cached.bsc?.balance ?? currentWallet.bsc.balance,
+				balanceUSD: cached.bsc?.balanceUSD ?? currentWallet.bsc.balanceUSD
 			}
 		};
 

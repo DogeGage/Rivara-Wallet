@@ -166,7 +166,7 @@
         
         const out = new Uint8Array(ctx.outlen);
         for (let i = 0; i < ctx.outlen; i++) {
-            out[i] = ctx.h[i >> 2] >> (8 * (i & 3));
+            out[i] = (ctx.h[i >> 2] >>> (8 * (i & 3))) & 0xff;
         }
         return out;
     }

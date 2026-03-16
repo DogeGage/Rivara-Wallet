@@ -15,7 +15,8 @@
 		FileText,
 		Shield,
 		Menu,
-		X
+		X,
+		Activity
 	} from 'lucide-svelte';
 	import { browser } from '$app/environment';
 

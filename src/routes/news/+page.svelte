@@ -7,6 +7,25 @@
 
 	const articles = [
 		{
+			date: 'March 15, 2026',
+			title: 'XTZ Support Removed 🪦',
+			featured: false,
+			content: `After extensive development efforts, we have made the decision to remove Tezos (XTZ) support from Rivara Wallet.
+
+**Why we removed it:**
+- Tezos requires a mandatory "reveal" operation before any transaction can be sent — a design decision found in no other major blockchain
+- The reveal system is inconsistent across RPC providers, with different nodes producing conflicting validation results
+- XTZ address derivation is incompatible with standard cryptographic libraries used by every other supported chain
+- Multiple established wallets including Guarda derive different addresses from the same seed phrase
+
+**What this means for you:**
+If you have XTZ funds, we recommend importing your seed phrase into Temple Wallet to access them safely.
+
+We remain committed to supporting cryptocurrencies that follow standard implementation practices. XTZ did not meet that bar.
+
+RIP XTZ support.`
+		},
+		{
 			date: 'December 21, 2025',
 			title: 'Rivara Wallet Launch 🚀',
 			featured: true,

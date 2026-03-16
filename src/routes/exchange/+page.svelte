@@ -33,7 +33,8 @@
 		'ETH': 'ethereum',
 		'POL': 'polygon',
 		'SOL': 'solana',
-		'XTZ': 'tezos',
+		'AVAX': 'avalanche',
+		'BNB': 'bsc',
 		'TRX': 'tron',
 		'USDC_ETH': 'ethereum',
 		'USDC_POL': 'polygon'
@@ -85,7 +86,8 @@
 		{ symbol: 'ETH', name: 'Ethereum', balance: currentWallet?.ethereum?.balance || '0', address: currentWallet?.ethereum?.address || '' },
 		{ symbol: 'POL', name: 'Polygon', balance: currentWallet?.polygon?.balance || '0', address: currentWallet?.polygon?.address || '' },
 		{ symbol: 'SOL', name: 'Solana', balance: currentWallet?.solana?.balance || '0', address: currentWallet?.solana?.address || '' },
-		{ symbol: 'XTZ', name: 'Tezos', balance: currentWallet?.tezos?.balance || '0', address: currentWallet?.tezos?.address || '' },
+		{ symbol: 'AVAX', name: 'Avalanche', balance: currentWallet?.avalanche?.balance || '0', address: currentWallet?.avalanche?.address || '' },
+		{ symbol: 'BNB', name: 'BNB Chain', balance: currentWallet?.bsc?.balance || '0', address: currentWallet?.bsc?.address || '' },
 		{ symbol: 'TRX', name: 'Tron', balance: currentWallet?.tron?.balance || '0', address: currentWallet?.tron?.address || '' },
 		{ symbol: 'USDC_ETH', name: 'USD Coin (Ethereum)', balance: ethUsdc?.balance || '0', address: currentWallet?.ethereum?.address || '' },
 		{ symbol: 'USDC_POL', name: 'USD Coin (Polygon)', balance: polyUsdc?.balance || '0', address: currentWallet?.polygon?.address || '' }

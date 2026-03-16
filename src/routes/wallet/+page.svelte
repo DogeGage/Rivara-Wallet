@@ -49,6 +49,8 @@
 				const ethereumAssets = [
 					{ id: 'ETH', name: 'Ethereum', symbol: 'ETH', balance: currentWallet.ethereum?.balance || '0', usd: convertCurrency(currentWallet.ethereum?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/eth.svg', address: currentWallet.ethereum?.address || '' },
 					{ id: 'POL', name: 'Polygon', symbol: 'POL', balance: currentWallet.polygon?.balance || '0', usd: convertCurrency(currentWallet.polygon?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/matic.svg', address: currentWallet.polygon?.address || '' },
+					{ id: 'AVAX', name: 'Avalanche', symbol: 'AVAX', balance: currentWallet.avalanche?.balance || '0', usd: convertCurrency(currentWallet.avalanche?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/avax.svg', address: currentWallet.avalanche?.address || '' },
+					{ id: 'BNB', name: 'BNB Chain', symbol: 'BNB', balance: currentWallet.bsc?.balance || '0', usd: convertCurrency(currentWallet.bsc?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/bnb.svg', address: currentWallet.bsc?.address || '' },
 					{ id: 'USDC_ETH', name: 'USD Coin (Ethereum)', symbol: 'USDC', balance: ethUsdc?.balance || '0', usd: ethUsdc ? convertCurrency(ethUsdc.balanceUSD || '0', currentCurrency, currentRates) : '0.00', icon: '/assets/crypto/SVG/iusdc.svg', address: currentWallet.ethereum?.address || '' },
 					{ id: 'USDC_POL', name: 'USD Coin (Polygon)', symbol: 'USDC', balance: polyUsdc?.balance || '0', usd: polyUsdc ? convertCurrency(polyUsdc.balanceUSD || '0', currentCurrency, currentRates) : '0.00', icon: '/assets/crypto/SVG/plUSDC.svg', address: currentWallet.polygon?.address || '' }
 				];
@@ -59,10 +61,7 @@
 						{ id: 'DOGE', name: 'Dogecoin', symbol: 'DOGE', balance: currentWallet.dogecoin?.balance || '0', usd: convertCurrency(currentWallet.dogecoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/doge.svg', address: currentWallet.dogecoin?.address || '' },
 						{ id: 'LTC', name: 'Litecoin', symbol: 'LTC', balance: currentWallet.litecoin?.balance || '0', usd: convertCurrency(currentWallet.litecoin?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/ltc.svg', address: currentWallet.litecoin?.address || '' }
 					]},
-					{ name: 'Ethereum', key: 'ethereum', color: '#627eea', assets: ethereumAssets },
-					{ name: 'Tezos', key: 'tezos', color: '#2c7df7', assets: [
-						{ id: 'XTZ', name: 'Tezos', symbol: 'XTZ', balance: currentWallet.tezos?.balance || '0', usd: convertCurrency(currentWallet.tezos?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/xtz.svg', address: currentWallet.tezos?.address || '' }
-					]},
+					{ name: 'EVM Chains', key: 'ethereum', color: '#627eea', assets: ethereumAssets },
 					{ name: 'Tron', key: 'tron', color: '#ef0027', assets: [
 						{ id: 'TRX', name: 'Tron', symbol: 'TRX', balance: currentWallet.tron?.balance || '0', usd: convertCurrency(currentWallet.tron?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/trx.svg', address: currentWallet.tron?.address || '' }
 					]},
@@ -173,7 +172,8 @@
 			selectedAsset.id === 'DOGE' ? 'dogecoin' :
 			selectedAsset.id === 'LTC' ? 'litecoin' :
 			selectedAsset.id === 'SOL' ? 'solana' :
-			selectedAsset.id === 'XTZ' ? 'tezos' :
+			selectedAsset.id === 'AVAX' ? 'avalanche' :
+			selectedAsset.id === 'BNB' ? 'bsc' :
 			selectedAsset.id === 'TRX' ? 'tron' : ''
 		  )
 		: [];
@@ -266,7 +266,8 @@
 			'DOGE': 'dogecoin',
 			'LTC': 'litecoin',
 			'SOL': 'solana',
-			'XTZ': 'tezos',
+			'AVAX': 'avalanche-2',
+			'BNB': 'binancecoin',
 			'TRX': 'tron',
 			'POL': 'polygon-ecosystem-token'
 			// USDC is a stablecoin - no chart needed

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { Shield, Clock, Trash2, Eye, Key, Lock, Download, Wallet, TrendingUp, RefreshCw, FileText, ExternalLink, Settings } from 'lucide-svelte';
+	import { Shield, Clock, Trash2, Eye, Key, Lock, Download, Wallet, TrendingUp, RefreshCw, FileText, ExternalLink, Settings, BookOpen, Info, AlertTriangle, Save } from 'lucide-svelte';
 	import { tuffbackupService } from '$lib/services/tuffbackup-service';
 	import { walletService } from '$lib/services/wallet-service';
 	import { encryptionService } from '$lib/services/encryption-service';
@@ -81,13 +81,14 @@
 	const lockTimeOptions = [5, 10, 15, 30, 60];
 
 	const tabs = [
-		{ id: 'general', label: 'General', icon: '⚙️' },
-		{ id: 'security', label: 'Security', icon: '🔐' },
-		{ id: 'backup', label: 'Backup & Recovery', icon: '💾' },
-		{ id: 'privatekeys', label: 'Private Keys', icon: '🗝️' },
-		{ id: 'addressbook', label: 'Address Book', icon: '📒' },
-		{ id: 'privacy', label: 'Privacy', icon: '🛡️' },
-		{ id: 'danger', label: 'Danger Zone', icon: '⚠️' }
+		{ id: 'general', label: 'General', icon: Settings },
+		{ id: 'security', label: 'Security', icon: Shield },
+		{ id: 'backup', label: 'Backup & Recovery', icon: Save },
+		{ id: 'privatekeys', label: 'Private Keys', icon: Key },
+		{ id: 'addressbook', label: 'Address Book', icon: BookOpen },
+		{ id: 'privacy', label: 'Privacy', icon: Lock },
+		{ id: 'about', label: 'About', icon: Info },
+		{ id: 'danger', label: 'Danger Zone', icon: AlertTriangle }
 	];
 
 	$: if (!$isUnlocked) {
@@ -341,6 +342,28 @@
 	let derivingKeys = false;
 	let copiedKey: string | null = null;
 
+	// About / Version info
+	let versionInfo: any = null;
+	let loadingVersion = false;
+
+	async function loadVersionInfo() {
+		loadingVersion = true;
+		try {
+			const res = await fetch('https://api.rivarawallet.xyz/');
+			if (res.ok) {
+				versionInfo = await res.json();
+			}
+		} catch (err) {
+			console.error('Failed to fetch version info:', err);
+		} finally {
+			loadingVersion = false;
+		}
+	}
+
+	$: if (activeTab === 'about' && !versionInfo && !loadingVersion) {
+		loadVersionInfo();
+	}
+
 	async function revealPrivateKeys() {
 		if (!pkPassword) { pkError = 'Enter your password'; return; }
 		derivingKeys = true;
@@ -382,34 +405,6 @@
 					const solPrivHex = Array.from(solKeys.privateKey.slice(0, 32) as number[])
 						.map((b: number) => b.toString(16).padStart(2, '0')).join('');
 					keys.push({ chain: 'Solana', key: solPrivHex, visible: false });
-				} catch {}
-
-				// Tezos — edsk base58 format
-				try {
-					// @ts-ignore
-					const xtzKeys = await getTezosEd25519Keys(mnemonic, "m/44'/1729'/0'/0'");
-					const seed = xtzKeys.privateKey.slice(0, 32);
-					const edskPrefix = new Uint8Array([13, 15, 58, 7]);
-					const payload = new Uint8Array(edskPrefix.length + seed.length);
-					payload.set(edskPrefix);
-					payload.set(seed, edskPrefix.length);
-					const h1 = ethers.utils.sha256(payload);
-					const h2 = ethers.utils.sha256(h1);
-					const checksum = [0,2,4,6].map((i: number) => parseInt(h2.slice(2+i, 4+i), 16));
-					const final = new Uint8Array(payload.length + 4);
-					final.set(payload);
-					final.set(new Uint8Array(checksum), payload.length);
-					const ALPHA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-					const digits = [0];
-					for (let i = 0; i < final.length; i++) {
-						let carry = final[i];
-						for (let j = 0; j < digits.length; j++) { carry += digits[j] << 8; digits[j] = carry % 58; carry = (carry / 58) | 0; }
-						while (carry > 0) { digits.push(carry % 58); carry = (carry / 58) | 0; }
-					}
-					let edsk = '';
-					for (let i = 0; i < final.length && final[i] === 0; i++) edsk += ALPHA[0];
-					for (let i = digits.length - 1; i >= 0; i--) edsk += ALPHA[digits[i]];
-					keys.push({ chain: 'Tezos', key: edsk, visible: false });
 				} catch {}
 			}
 
@@ -474,7 +469,9 @@
 					class:active={activeTab === tab.id}
 					on:click={() => { if (activeTab === 'privatekeys' && tab.id !== 'privatekeys') lockPrivateKeys(); activeTab = tab.id; }}
 				>
-					<span class="sidebar-icon">{tab.icon}</span>
+					<span class="sidebar-icon">
+						<svelte:component this={tab.icon} size={18} />
+					</span>
 					<span class="sidebar-label">{tab.label}</span>
 				</button>
 			{/each}
@@ -773,6 +770,91 @@
 						</div>
 					</div>
 
+				<!-- ─── About ─── -->
+				{:else if activeTab === 'about'}
+					<h2 class="section-title">About Rivara</h2>
+					<p class="section-desc">Version information and project details</p>
+
+					<div class="settings-card">
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Version</strong>
+								{#if loadingVersion}
+									<span class="text-slate-500">Loading...</span>
+								{:else if versionInfo?.engine}
+									<span>{versionInfo.engine}</span>
+								{:else}
+									<span>Phantom v6.1.0</span>
+								{/if}
+							</div>
+							{#if !loadingVersion && !versionInfo}
+								<div class="item-actions">
+									<button class="btn-secondary" on:click={loadVersionInfo}>Check API</button>
+								</div>
+							{/if}
+						</div>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>API Status</strong>
+								{#if loadingVersion}
+									<span class="text-slate-500">Checking...</span>
+								{:else if versionInfo?.status === 'online'}
+									<span class="text-emerald-400">● Online</span>
+								{:else if versionInfo?.status}
+									<span class="text-yellow-400">● {versionInfo.status}</span>
+								{:else}
+									<span class="text-slate-500">Not checked</span>
+								{/if}
+							</div>
+						</div>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Release Date</strong>
+								<span>March 15, 2026</span>
+							</div>
+						</div>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>License</strong>
+								<span>Open source under MIT License</span>
+							</div>
+							<div class="item-actions">
+								<a href="https://github.com/dominic84p/Rivara-Wallet/blob/main/LICENSE" target="_blank" rel="noopener" class="btn-secondary">View ↗</a>
+							</div>
+						</div>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>GitHub Repository</strong>
+								<span>View source code, report issues, contribute</span>
+							</div>
+							<div class="item-actions">
+								<a href="https://github.com/dominic84p/Rivara-Wallet" target="_blank" rel="noopener" class="btn-secondary">Open ↗</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="settings-card mt-6">
+						<h3 class="card-subtitle">🔗 Links</h3>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Documentation</strong>
+								<span>Learn how to use Rivara</span>
+							</div>
+							<div class="item-actions">
+								<a href="https://github.com/dominic84p/Rivara-Wallet#readme" target="_blank" rel="noopener" class="btn-secondary">Read ↗</a>
+							</div>
+						</div>
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Report an Issue</strong>
+								<span>Found a bug? Let us know</span>
+							</div>
+							<div class="item-actions">
+								<a href="https://github.com/dominic84p/Rivara-Wallet/issues" target="_blank" rel="noopener" class="btn-secondary">Report ↗</a>
+							</div>
+						</div>
+					</div>
+
 				<!-- ─── Danger Zone ─── -->
 				{:else if activeTab === 'danger'}
 					<h2 class="section-title" style="color: #f87171;">Danger Zone</h2>
@@ -791,8 +873,7 @@
 					</div>
 				{/if}
 
-				<!-- Version -->
-				<p class="text-center text-slate-600 text-xs mt-10">Rivara Wallet v1.0.0-beta</p>
+
 			</div>
 		</div>
 	</div>
@@ -1066,9 +1147,11 @@
 	}
 
 	.sidebar-icon {
-		font-size: 1.125rem;
-		width: 24px;
-		text-align: center;
+		width: 18px;
+		height: 18px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex-shrink: 0;
 	}
 

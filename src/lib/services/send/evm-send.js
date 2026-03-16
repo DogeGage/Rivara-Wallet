@@ -22,6 +22,20 @@ const NETWORKS = {
 		rpcUrl: 'https://api.rivarawallet.xyz/api/polygon/rpc',
 		nativeCurrency: 'POL',
 		explorer: 'https://polygonscan.com/tx/'
+	},
+	avalanche: {
+		name: 'avalanche',
+		chainId: 43114,
+		rpcUrl: 'https://api.rivarawallet.xyz/api/avalanche/rpc',
+		nativeCurrency: 'AVAX',
+		explorer: 'https://snowtrace.io/tx/'
+	},
+	bsc: {
+		name: 'bsc',
+		chainId: 56,
+		rpcUrl: 'https://api.rivarawallet.xyz/api/bsc/rpc',
+		nativeCurrency: 'BNB',
+		explorer: 'https://bscscan.com/tx/'
 	}
 };
 
@@ -137,4 +151,12 @@ export async function sendEthereum(toAddress, amount) {
 
 export async function sendPolygon(toAddress, amount) {
 	return sendEvm('polygon', toAddress, amount);
+}
+
+export async function sendAvalanche(toAddress, amount) {
+	return sendEvm('avalanche', toAddress, amount);
+}
+
+export async function sendBsc(toAddress, amount) {
+	return sendEvm('bsc', toAddress, amount);
 }

@@ -72,9 +72,10 @@ export const totalBalance = derived(wallet, ($wallet) => {
 		parseFloat($wallet.litecoin.balanceUSD || '0') +
 		parseFloat($wallet.polygon.balanceUSD || '0') +
 		parseFloat($wallet.dgage.balanceUSD || '0') +
-		parseFloat($wallet.tezos.balanceUSD || '0') +
 		parseFloat($wallet.tron.balanceUSD || '0') +
-		parseFloat($wallet.solana.balanceUSD || '0');
+		parseFloat($wallet.solana.balanceUSD || '0') +
+		parseFloat($wallet.avalanche.balanceUSD || '0') +
+		parseFloat($wallet.bsc.balanceUSD || '0');
 
 	const ethTokens = $wallet.detectedTokens?.ethereum || [];
 	const polyTokens = $wallet.detectedTokens?.polygon || [];

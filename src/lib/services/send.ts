@@ -55,14 +55,17 @@ export async function sendTransaction(params: SendParams): Promise<string> {
 		case 'solana':
 			return await sendSolana(toAddress, amount);
 
-		case 'tezos':
-			return await sendTezos(toAddress, amount);
-
 		case 'tron':
 			return await sendTron(toAddress, amount);
 
 		case 'polygon':
 			return await sendPolygon(toAddress, amount);
+
+		case 'avalanche':
+			return await sendAvalanche(toAddress, amount);
+
+		case 'bsc':
+			return await sendBsc(toAddress, amount);
 
 		default:
 			throw new Error(`Unsupported chain: ${chain}`);
@@ -110,6 +113,16 @@ async function sendTron(toAddress: string, amount: string): Promise<string> {
 
 async function sendPolygon(toAddress: string, amount: string): Promise<string> {
 	const { sendPolygon: send } = await import('./send/evm-send.js');
+	return send(toAddress, amount);
+}
+
+async function sendAvalanche(toAddress: string, amount: string): Promise<string> {
+	const { sendAvalanche: send } = await import('./send/evm-send.js');
+	return send(toAddress, amount);
+}
+
+async function sendBsc(toAddress: string, amount: string): Promise<string> {
+	const { sendBsc: send } = await import('./send/evm-send.js');
 	return send(toAddress, amount);
 }
 

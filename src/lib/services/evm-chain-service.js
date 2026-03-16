@@ -28,6 +28,26 @@ const CHAIN_CONFIGS = {
 		scanApi: 'https://api.polygonscan.com/api',
 		explorer: 'https://polygonscan.com/tx/',
 		defaultPrice: 0.50
+	},
+	avalanche: {
+		name: 'Avalanche',
+		symbol: 'AVAX',
+		chainId: 43114,
+		blockchain: 'avalanche',
+		coingeckoId: 'avalanche-2',
+		scanApi: 'https://api.snowtrace.io/api',
+		explorer: 'https://snowtrace.io/tx/',
+		defaultPrice: 35
+	},
+	bsc: {
+		name: 'BNB Smart Chain',
+		symbol: 'BNB',
+		chainId: 56,
+		blockchain: 'bsc',
+		coingeckoId: 'binancecoin',
+		scanApi: 'https://api.bscscan.com/api',
+		explorer: 'https://bscscan.com/tx/',
+		defaultPrice: 600
 	}
 };
 
@@ -239,7 +259,19 @@ class PolygonService extends EvmChainService {
 	}
 }
 
+class AvalancheService extends EvmChainService {
+	constructor() {
+		super('avalanche');
+	}
+}
+
+class BscService extends EvmChainService {
+	constructor() {
+		super('bsc');
+	}
+}
+
 // SECURITY FIX 3: window.* globals removed — use ES module imports instead
 
-export { EvmChainService as EVMChainService, EthereumService, PolygonService };
+export { EvmChainService as EVMChainService, EthereumService, PolygonService, AvalancheService, BscService };
 
