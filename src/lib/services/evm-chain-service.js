@@ -67,6 +67,29 @@ class EvmChainService {
 	deriveAddress(mnemonic) {
 		const { ethers } = window.cryptoLibs;
 		const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+		
+		// For AVAX, we need to handle C-Chain (EVM) addresses
+		// C-Chain uses standard EVM addresses (0x...)
+		// X-Chain and P-Chain use bech32 format (X-/P-avax...)
+		// For wallet purposes, we'll use C-Chain which is EVM-compatible
+		if (this.chain === 'avalanche') {
+			// C-Chain uses the same address as Ethereum
+			return {
+				address: wallet.address, // This is the C-Chain address
+				privateKey: wallet.privateKey
+			};
+		}
+		
+		// For BSC, it uses standard EVM addresses
+		// BSC is a fork of Ethereum and uses the same address format
+		if (this.chain === 'bsc') {
+			return {
+				address: wallet.address,
+				privateKey: wallet.privateKey
+			};
+		}
+		
+		// Standard EVM chains (Ethereum, Polygon)
 		return {
 			address: wallet.address,
 			privateKey: wallet.privateKey
@@ -173,9 +196,7 @@ class EvmChainService {
 		const { ethers } = window.cryptoLibs;
 		
 		// Use Worker's RPC proxy for sending transactions
-		const rpcUrl = this.chain === 'ethereum' 
-			? `${WORKER_URL}/api/ethereum/rpc`
-			: `${WORKER_URL}/api/polygon/rpc`;
+		const rpcUrl = `${WORKER_URL}/api/${this.chain}/rpc`;
 		
 		const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 		const wallet = ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
@@ -199,9 +220,7 @@ class EvmChainService {
 			const { ethers } = window.cryptoLibs;
 			
 			// Use Worker's RPC proxy for fee estimation
-			const rpcUrl = this.chain === 'ethereum' 
-				? `${WORKER_URL}/api/ethereum/rpc`
-				: `${WORKER_URL}/api/polygon/rpc`;
+			const rpcUrl = `${WORKER_URL}/api/${this.chain}/rpc`;
 			
 			const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 			const dummyWallet = ethers.Wallet.fromMnemonic('test test test test test test test test test test test junk').connect(provider);

@@ -30,6 +30,7 @@
     "ethers": "5.7.2",
     "framer-motion": "^11.0.0",
     "lucide-svelte": "^0.460.0",
+    "qrcode": "^1.5.4",
     "tailwind-variants": "^0.2.0",
     "tronweb": "^5.3.2",
     "vite-plugin-node-polyfills": "^0.25.0",

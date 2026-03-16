@@ -8,6 +8,36 @@
 	const articles = [
 		{
 			date: 'March 15, 2026',
+			title: 'Why We Are Never Using Kiro AI IDE Again',
+			featured: true,
+			content: `We need to talk about what happened with Kiro AI IDE and why it cost us 3 days of downtime.
+
+**What Kiro Did:**
+Kiro completely deleted all our working send transaction code and replaced it with a hardcoded error message. Why? Because it thought that's how you implement duress mode. It literally removed hundreds of lines of functional code and put in a fake "Network error" message, breaking every single transaction in production.
+
+Then it kept making things worse:
+- Deleted the encryption service import (causing "Can't find variable" errors)
+- Forgot to declare variables it was using
+- Hardcoded "Unsupported chain" for USDC transactions
+- Removed the entire success confirmation screen
+- Passed numbers instead of strings to functions that explicitly require strings
+
+**The Real Problem:**
+This wasn't just bugs. Kiro fundamentally misunderstood what we were building. It saw "duress mode" (a security feature that shows fake errors when you're being threatened) and decided the solution was to make ALL transactions fail ALL the time. That's not a small mistake - that's a complete failure to understand the codebase.
+
+**3 Days of Broken Transactions:**
+For 3 days, nobody could send crypto. Every transaction failed. USDC holders couldn't move their funds. Users got cryptic error messages. The wallet was essentially non-functional for its core purpose.
+
+**Here's the Thing:**
+Kiro uses Claude, which is actually a good model. But Kiro's implementation is so bad that it makes Claude perform like a budget AI. The way Kiro feeds context to the model, the way it handles code changes, the way it makes decisions - it's all fundamentally broken. You're better off using literally any other AI coding tool.
+
+**What We Learned:**
+Don't use Kiro for production code. The brand name "Claude" doesn't matter when the tool wrapping it is this poorly designed. We're switching to Cursor or Windsurf - tools that actually understand codebases and don't delete working code on a whim.
+
+If you're considering Kiro, don't. Save yourself the headache and the downtime.`
+		},
+		{
+			date: 'March 15, 2026',
 			title: 'XTZ Support Removed 🪦',
 			featured: false,
 			content: `After extensive development efforts, we have made the decision to remove Tezos (XTZ) support from Rivara Wallet.

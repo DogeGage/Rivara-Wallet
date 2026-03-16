@@ -4,13 +4,16 @@
 	import { browser } from '$app/environment';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
 	import { 
 		Wallet, Send, ArrowDownToLine, RefreshCw, Settings, Eye, EyeOff,
-		Copy, Check, Lock, TrendingUp, ChevronDown, ChevronRight, ArrowLeft
+		Copy, Check, Lock, TrendingUp, ChevronDown, ChevronRight, ArrowLeft, QrCode
 	} from 'lucide-svelte';
 	import { wallet, isUnlocked, isCurrentUnlock, balancesLoading, totalBalance, selectedCurrency, exchangeRates, currencySymbols, convertCurrency, fetchExchangeRates } from '$lib/stores/wallet';
 	import { walletService } from '$lib/services/wallet-service';
 	import { addressBookService } from '$lib/services/address-book-service';
+	import { encryptionService } from '$lib/services/encryption-service';
+	import { sendTransaction, getExplorerUrl } from '$lib/services/send';
 
 
 
@@ -18,6 +21,7 @@
 	let copied = false;
 	let selectedCrypto: string | null = null;
 	let showingSend = false;
+	let showingQR = false;
 	let pageLoading = true;
 	let expandedChains: Record<string, boolean> = {
 		bitcoin: true,
@@ -49,7 +53,7 @@
 				const ethereumAssets = [
 					{ id: 'ETH', name: 'Ethereum', symbol: 'ETH', balance: currentWallet.ethereum?.balance || '0', usd: convertCurrency(currentWallet.ethereum?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/eth.svg', address: currentWallet.ethereum?.address || '' },
 					{ id: 'POL', name: 'Polygon', symbol: 'POL', balance: currentWallet.polygon?.balance || '0', usd: convertCurrency(currentWallet.polygon?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/matic.svg', address: currentWallet.polygon?.address || '' },
-					{ id: 'AVAX', name: 'Avalanche', symbol: 'AVAX', balance: currentWallet.avalanche?.balance || '0', usd: convertCurrency(currentWallet.avalanche?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/avax.svg', address: currentWallet.avalanche?.address || '' },
+					{ id: 'AVAX', name: 'Avalanche C-Chain', symbol: 'AVAX', balance: currentWallet.avalanche?.balance || '0', usd: convertCurrency(currentWallet.avalanche?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/avax.svg', address: currentWallet.avalanche?.address || '' },
 					{ id: 'BNB', name: 'BNB Chain', symbol: 'BNB', balance: currentWallet.bsc?.balance || '0', usd: convertCurrency(currentWallet.bsc?.balanceUSD || '0', currentCurrency, currentRates), icon: '/assets/crypto/SVG/bnb.svg', address: currentWallet.bsc?.address || '' },
 					{ id: 'USDC_ETH', name: 'USD Coin (Ethereum)', symbol: 'USDC', balance: ethUsdc?.balance || '0', usd: ethUsdc ? convertCurrency(ethUsdc.balanceUSD || '0', currentCurrency, currentRates) : '0.00', icon: '/assets/crypto/SVG/iusdc.svg', address: currentWallet.ethereum?.address || '' },
 					{ id: 'USDC_POL', name: 'USD Coin (Polygon)', symbol: 'USDC', balance: polyUsdc?.balance || '0', usd: polyUsdc ? convertCurrency(polyUsdc.balanceUSD || '0', currentCurrency, currentRates) : '0.00', icon: '/assets/crypto/SVG/plUSDC.svg', address: currentWallet.polygon?.address || '' }
@@ -160,8 +164,9 @@
 	// Send flow state
 	let sendAddress = '';
 	let sendAmount = '';
-	let sendStage: 'form' | 'confirm' | 'sending' | 'error' = 'form';
+	let sendStage: 'form' | 'confirm' | 'sending' | 'error' | 'success' = 'form';
 	let sendError = '';
+	let sendTxHash = '';
 	let showContactPicker = false;
 
 	$: sendContacts = selectedAsset
@@ -188,10 +193,59 @@
 	async function confirmSend() {
 		sendStage = 'sending';
 		sendError = '';
-		// Simulate processing delay then fail with servers down
-		await new Promise(r => setTimeout(r, 2200));
-		sendStage = 'error';
-		sendError = 'Sending servers are currently unavailable. Please try again later.';
+		
+		try {
+			const encryptedWallet = localStorage.getItem('encryptedWallet');
+			if (!encryptedWallet) throw new Error('Wallet not found');
+			
+			const sessionPw = sessionStorage.getItem('_walletSessionPw');
+			if (!sessionPw) throw new Error('Session expired. Please lock and unlock your wallet.');
+			
+			const mnemonic = await encryptionService.decrypt(encryptedWallet, sessionPw);
+			
+			// Ensure amount is a string
+			const amountStr = String(sendAmount);
+			
+			let txHash: string;
+			
+			// Handle USDC tokens separately
+			if (selectedAsset.id === 'USDC_ETH') {
+				const { sendUSDC } = await import('$lib/services/send');
+				txHash = await sendUSDC('ethereum', sendAddress, amountStr);
+			} else if (selectedAsset.id === 'USDC_POL') {
+				const { sendUSDC } = await import('$lib/services/send');
+				txHash = await sendUSDC('polygon', sendAddress, amountStr);
+			} else {
+				// Handle native tokens
+				const chainKey = selectedAsset.id === 'BTC' ? 'bitcoin' :
+					selectedAsset.id === 'ETH' ? 'ethereum' :
+					selectedAsset.id === 'DOGE' ? 'dogecoin' :
+					selectedAsset.id === 'POL' ? 'polygon' :
+					selectedAsset.id === 'LTC' ? 'litecoin' :
+					selectedAsset.id === 'SOL' ? 'solana' :
+					selectedAsset.id === 'AVAX' ? 'avalanche' :
+					selectedAsset.id === 'BNB' ? 'bsc' :
+					selectedAsset.id === 'TRX' ? 'tron' : '';
+				
+				if (!chainKey) throw new Error('Unsupported chain');
+				
+				txHash = await sendTransaction({
+					chain: chainKey,
+					toAddress: sendAddress,
+					amount: amountStr,
+					mnemonic
+				});
+			}
+			
+			sendTxHash = txHash;
+			sendStage = 'success';
+			
+			// Refresh balances after successful send
+			setTimeout(() => walletService.fetchBalances(), 2000);
+		} catch (err: any) {
+			sendStage = 'error';
+			sendError = err.message || 'Transaction failed';
+		}
 	}
 
 	function resetSendForm() {
@@ -380,7 +434,7 @@
 </script>
 
 
-<div class="flex flex-col h-screen bg-[#070b10]">
+<div class="flex flex-col h-screen bg-white dark:bg-[#070b10]">
 	<!-- Top Nav -->
 	<nav class="flex items-center justify-between px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
 		<div class="flex items-center gap-8">
@@ -532,7 +586,10 @@
 								<div class="text-sm text-slate-500 mb-2.5 font-medium">Wallet Address</div>
 								<div class="flex items-center gap-2.5 p-3.5 bg-black/20 rounded-lg border border-white/5">
 									<span class="flex-1 text-sm text-slate-300 font-mono break-all">{selectedAsset.address}</span>
-									<button on:click={copyAddress} class="p-2 hover:bg-white/5 rounded-lg transition">
+									<button on:click={() => showingQR = true} class="p-2 hover:bg-white/5 rounded-lg transition" title="Show QR Code">
+										<QrCode size={16} class="text-slate-400" />
+									</button>
+									<button on:click={copyAddress} class="p-2 hover:bg-white/5 rounded-lg transition" title="Copy Address">
 										{#if copied}
 											<Check size={16} class="text-green-400" />
 										{:else}
@@ -724,6 +781,63 @@
 										<p class="text-slate-400 text-sm mb-6">{sendError}</p>
 										<button on:click={resetSendForm} class="px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-lg hover:bg-white/10 transition">Try Again</button>
 									</div>
+
+								{:else if sendStage === 'success'}
+									<div class="py-8 text-center">
+										<div class="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
+										<p class="text-white font-semibold mb-2 text-xl">Transaction Sent!</p>
+										<p class="text-slate-400 text-sm mb-6">Your transaction has been broadcast to the network</p>
+										{#if sendTxHash}
+											<div class="mb-6 p-4 bg-black/20 border border-white/10 rounded-lg">
+												<p class="text-slate-400 text-xs mb-2">Transaction Hash</p>
+												<p class="text-white font-mono text-xs break-all">{sendTxHash}</p>
+											</div>
+											<div class="flex gap-3 justify-center">
+												{#if selectedAsset.id === 'USDC_ETH'}
+													<a 
+														href={getExplorerUrl('ethereum', sendTxHash)}
+														target="_blank"
+														rel="noopener noreferrer"
+														class="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500 transition"
+													>
+														View on Etherscan
+													</a>
+												{:else if selectedAsset.id === 'USDC_POL'}
+													<a 
+														href={getExplorerUrl('polygon', sendTxHash)}
+														target="_blank"
+														rel="noopener noreferrer"
+														class="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500 transition"
+													>
+														View on Polygonscan
+													</a>
+												{:else}
+													<a 
+														href={getExplorerUrl(
+															selectedAsset.id === 'BTC' ? 'bitcoin' :
+															selectedAsset.id === 'ETH' ? 'ethereum' :
+															selectedAsset.id === 'DOGE' ? 'dogecoin' :
+															selectedAsset.id === 'POL' ? 'polygon' :
+															selectedAsset.id === 'LTC' ? 'litecoin' :
+															selectedAsset.id === 'SOL' ? 'solana' :
+															selectedAsset.id === 'TRX' ? 'tron' : 'ethereum',
+															sendTxHash
+														)}
+														target="_blank"
+														rel="noopener noreferrer"
+														class="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500 transition"
+													>
+														View on Blockchain
+													</a>
+												{/if}
+												<button on:click={resetSendForm} class="px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-lg hover:bg-white/10 transition">
+													Send Another
+												</button>
+											</div>
+										{:else}
+											<button on:click={resetSendForm} class="px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500 transition">Done</button>
+										{/if}
+									</div>
 								{/if}
 							</div>
 						</div>
@@ -741,6 +855,16 @@
 		{/if}
 	</div>
 </div>
+
+<!-- QR Code Modal -->
+{#if showingQR && selectedAsset}
+	<QRCodeModal 
+		address={selectedAsset.address}
+		symbol={selectedAsset.symbol}
+		name={selectedAsset.name}
+		onClose={() => showingQR = false}
+	/>
+{/if}
 
 <!-- Mobile Bottom Nav -->
 <div class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">

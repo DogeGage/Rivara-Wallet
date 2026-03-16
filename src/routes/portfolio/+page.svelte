@@ -2,19 +2,37 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { RefreshCw, Settings, Lock, Wallet, TrendingUp } from 'lucide-svelte';
-	import { isUnlocked } from '$lib/stores/wallet';
+	import { isUnlocked, wallet, totalBalance, selectedCurrency, convertCurrency, exchangeRates } from '$lib/stores/wallet';
+	import { walletService } from '$lib/services/wallet-service';
 
 	let currentTimeframe = '7D';
-	let totalBalance = '12,345.67';
 
-	const assets = [
-		{ name: 'Bitcoin', symbol: 'BTC', color: '#f7931a', balance: '45234.50', percentage: 37 },
-		{ name: 'Ethereum', symbol: 'ETH', color: '#627eea', balance: '6234.50', percentage: 25 },
-		{ name: 'Solana', symbol: 'SOL', color: '#14f195', balance: '1234.50', percentage: 15 },
-		{ name: 'Dogecoin', symbol: 'DOGE', color: '#c2a633', balance: '1234.50', percentage: 10 },
-		{ name: 'Polygon', symbol: 'POL', color: '#8247e5', balance: '1234.50', percentage: 8 },
-		{ name: 'Litecoin', symbol: 'LTC', color: '#bfbbbb', balance: '523.45', percentage: 5 }
-	];
+	$: currentWallet = $wallet;
+	$: currentTotalBalance = $totalBalance;
+	$: convertedBalance = convertCurrency(currentTotalBalance, $selectedCurrency, $exchangeRates);
+
+	// Calculate asset allocation from real wallet data
+	$: assets = currentWallet ? (() => {
+		const assetList = [
+			{ name: 'Bitcoin', symbol: 'BTC', color: '#f7931a', usd: parseFloat(currentWallet.bitcoin?.balanceUSD || '0') },
+			{ name: 'Ethereum', symbol: 'ETH', color: '#627eea', usd: parseFloat(currentWallet.ethereum?.balanceUSD || '0') },
+			{ name: 'Solana', symbol: 'SOL', color: '#14f195', usd: parseFloat(currentWallet.solana?.balanceUSD || '0') },
+			{ name: 'Dogecoin', symbol: 'DOGE', color: '#c2a633', usd: parseFloat(currentWallet.dogecoin?.balanceUSD || '0') },
+			{ name: 'Polygon', symbol: 'POL', color: '#8247e5', usd: parseFloat(currentWallet.polygon?.balanceUSD || '0') },
+			{ name: 'Litecoin', symbol: 'LTC', color: '#bfbbbb', usd: parseFloat(currentWallet.litecoin?.balanceUSD || '0') },
+			{ name: 'Tron', symbol: 'TRX', color: '#ef0027', usd: parseFloat(currentWallet.tron?.balanceUSD || '0') },
+			{ name: 'Avalanche', symbol: 'AVAX', color: '#e84142', usd: parseFloat(currentWallet.avalanche?.balanceUSD || '0') },
+			{ name: 'BNB Chain', symbol: 'BNB', color: '#f3ba2f', usd: parseFloat(currentWallet.bsc?.balanceUSD || '0') }
+		].filter(a => a.usd > 0);
+
+		const total = assetList.reduce((sum, a) => sum + a.usd, 0);
+		
+		return assetList.map(a => ({
+			...a,
+			balance: convertCurrency(a.usd.toFixed(2), $selectedCurrency, $exchangeRates),
+			percentage: total > 0 ? Math.round((a.usd / total) * 100) : 0
+		})).sort((a, b) => b.usd - a.usd);
+	})() : [];
 
 	$: if (!$isUnlocked) {
 		goto('/unlock');
@@ -22,6 +40,11 @@
 
 	onMount(() => {
 		if (!$isUnlocked) return;
+		
+		// Fetch balances if wallet exists
+		if ($wallet) {
+			walletService.fetchBalances();
+		}
 	});
 
 	function lockWallet() {
@@ -88,7 +111,7 @@
 					<div class="relative p-8 rounded-2xl bg-gradient-to-br from-slate-900/40 to-slate-800/60 backdrop-blur-xl border border-white/5 border-t-white/10 shadow-2xl">
 						<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
 							<div class="text-sm text-slate-500 mb-1">Total Balance</div>
-							<div class="text-2xl font-bold text-white">${totalBalance}</div>
+							<div class="text-2xl font-bold text-white">${convertedBalance}</div>
 						</div>
 						<div class="w-64 h-64 mx-auto">
 							<canvas id="portfolioDonut"></canvas>

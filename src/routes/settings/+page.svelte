@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { Shield, Clock, Trash2, Eye, Key, Lock, Download, Wallet, TrendingUp, RefreshCw, FileText, ExternalLink, Settings, BookOpen, Info, AlertTriangle, Save } from 'lucide-svelte';
+	import { Shield, Clock, Trash2, Eye, Key, Lock, Download, Wallet, TrendingUp, RefreshCw, FileText, ExternalLink, Settings, BookOpen, Info, AlertTriangle, Save, Sun, Moon } from 'lucide-svelte';
 	import { tuffbackupService } from '$lib/services/tuffbackup-service';
 	import { walletService } from '$lib/services/wallet-service';
 	import { encryptionService } from '$lib/services/encryption-service';
@@ -9,6 +9,7 @@
 	import type { Contact } from '$lib/services/address-book-service';
 	import { detectChain } from '$lib/services/send';
 	import { isUnlocked } from '$lib/stores/wallet';
+	import { theme } from '$lib/stores/theme';
 
 	let activeTab = 'general';
 	let showPasswordModal = false;
@@ -492,6 +493,29 @@
 					<p class="section-desc">Customize your wallet experience</p>
 
 					<div class="settings-card">
+						<div class="settings-item">
+							<div class="item-info">
+								<strong>Theme</strong>
+								<span>Choose between light and dark mode</span>
+							</div>
+							<div class="item-actions">
+								<button 
+									class="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all {$theme === 'dark' ? 'bg-cyan-600 border-cyan-500 text-white' : 'bg-white/5 border-white/10 text-slate-400'}"
+									on:click={() => theme.set('dark')}
+								>
+									<Moon size={16} />
+									Dark
+								</button>
+								<button 
+									class="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all {$theme === 'light' ? 'bg-cyan-600 border-cyan-500 text-white' : 'bg-white/5 border-white/10 text-slate-400'}"
+									on:click={() => theme.set('light')}
+								>
+									<Sun size={16} />
+									Light
+								</button>
+							</div>
+						</div>
+
 						<div class="settings-item">
 							<div class="item-info">
 								<strong>Display Currency</strong>
