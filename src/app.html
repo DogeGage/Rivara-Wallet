@@ -1,3 +1,8 @@
+<!-- 
+  Rivara Wallet
+  Copyright (c) 2024-2026 DogeGage
+  Licensed under DogeGage Source Available License
+-->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,7 +15,7 @@
 	<title>Rivara Wallet - Secure Multi-Chain Crypto Wallet</title>
 	<meta name="title" content="Rivara Wallet - Secure Multi-Chain Crypto Wallet" />
 	<meta name="description"
-		content="Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tezos, Tron, and Polygon. Your keys, your crypto." />
+		content="Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tron, and Polygon. Your keys, your crypto." />
 	<meta name="keywords"
 		content="crypto wallet, bitcoin wallet, ethereum wallet, dogecoin wallet, multi-chain wallet, non-custodial wallet, web3 wallet, cryptocurrency, blockchain" />
 	<meta name="author" content="Rivara" />
@@ -21,7 +26,7 @@
 	<meta property="og:url" content="https://rivarawallet.xyz/" />
 	<meta property="og:title" content="Rivara Wallet - Secure Multi-Chain Crypto Wallet" />
 	<meta property="og:description"
-		content="Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tezos, Tron, and Polygon. Your keys, your crypto." />
+		content="Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tron, and Polygon. Your keys, your crypto." />
 	<meta property="og:site_name" content="Rivara Wallet" />
 
 	<!-- Twitter -->
@@ -29,7 +34,7 @@
 	<meta property="twitter:url" content="https://rivarawallet.xyz/" />
 	<meta property="twitter:title" content="Rivara Wallet - Secure Multi-Chain Crypto Wallet" />
 	<meta property="twitter:description"
-		content="Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tezos, Tron, and Polygon. Your keys, your crypto." />
+		content="Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tron, and Polygon. Your keys, your crypto." />
 
 	<!-- Additional Meta Tags -->
 	<meta name="theme-color" content="#0891b2" />
@@ -58,7 +63,7 @@
 				"price": "0",
 				"priceCurrency": "USD"
 			},
-			"description": "Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tezos, Tron, and Polygon.",
+			"description": "Non-custodial multi-chain cryptocurrency wallet supporting Bitcoin, Ethereum, Dogecoin, Litecoin, Solana, Tron, and Polygon.",
 			"featureList": [
 				"Multi-chain support",
 				"Non-custodial",
@@ -78,9 +83,7 @@
 	<script src="https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
 
 	<!-- Load wallet utility scripts from static folder -->
-	<script src="/blake2b-proper.js"></script>
-	<script src="/base58check.js"></script>
-	<script src="/tezos-ed25519.js"></script>
+	<script src="/ed25519-derive.js"></script>
 
 	<script>
 		// Setup crypto libraries (same as old desktop app)

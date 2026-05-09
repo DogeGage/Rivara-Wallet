@@ -82,7 +82,7 @@ class SolanaService {
         const path = "m/44'/501'/0'/0'";
 
         try {
-            // Get Ed25519 keys (reuse Tezos derivation function)
+            // Get Ed25519 keys via BIP32-Ed25519 derivation (shared with Solana path)
             const keys = await getTezosEd25519Keys(mnemonic, path);
             const publicKeyBytes = keys.publicKey;
 
@@ -91,7 +91,7 @@ class SolanaService {
 
             return {
                 address: address,
-                publicKey: bytesToHex(publicKeyBytes),
+                publicKey: this.bytesToHex(publicKeyBytes),
                 path: path
             };
         } catch (error) {
@@ -102,6 +102,10 @@ class SolanaService {
                 path: path
             };
         }
+    }
+
+    bytesToHex(bytes) {
+        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     base58Encode(bytes) {

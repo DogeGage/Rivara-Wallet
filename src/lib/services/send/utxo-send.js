@@ -82,22 +82,23 @@ async function fetchUtxos(chain, address) {
 		// Blockchair failed, try fallbacks
 	}
 
-	// Fallback for Bitcoin only - blockchain.info
+	// Fallback for Bitcoin only - mempool.space (Highly reliable, CORS-enabled)
 	if (chain === 'bitcoin' && utxos.length === 0) {
 		try {
-			const response = await fetch(`https://blockchain.info/unspent?active=${address}`);
-			const data = await response.json();
-
-			if (data.unspent_outputs) {
-				utxos = data.unspent_outputs.map(utxo => ({
-					transaction_hash: utxo.tx_hash_big_endian,
-					index: utxo.tx_output_n,
-					value: utxo.value
-				}));
-				return utxos;
+			const response = await fetch(`https://mempool.space/api/address/${address}/utxo`);
+			if (response.ok) {
+				const data = await response.json();
+				if (Array.isArray(data)) {
+					utxos = data.map(utxo => ({
+						transaction_hash: utxo.txid,
+						index: utxo.vout,
+						value: utxo.value
+					}));
+					return utxos;
+				}
 			}
 		} catch (error) {
-			// Blockchain.info fallback failed
+			console.error("Mempool.space fallback failed", error);
 		}
 	}
 
@@ -226,8 +227,22 @@ export async function sendUtxo(chain, toAddress, amount) {
 		const fromAddress = wallet[chain].address;
 		const amountSatoshis = Math.floor(parseFloat(amount) * 100000000);
 
-		// Fetch UTXOs
-		const utxos = await fetchUtxos(chain, fromAddress);
+		// ── UTXO fetch with retry ──────────────────────────────────────────────
+		// UTXOs for a freshly-confirmed tx can take a moment to appear in the API.
+		// Retry up to 3 times with a 2-second delay before giving up.
+		let utxos = [];
+		const MAX_UTXO_RETRIES = 3;
+		const UTXO_RETRY_DELAY_MS = 2000;
+
+		for (let attempt = 1; attempt <= MAX_UTXO_RETRIES; attempt++) {
+			utxos = await fetchUtxos(chain, fromAddress);
+			if (utxos.length > 0) break;
+
+			if (attempt < MAX_UTXO_RETRIES) {
+				console.log(`[${chain}] No UTXOs on attempt ${attempt}, retrying in ${UTXO_RETRY_DELAY_MS}ms…`);
+				await new Promise(resolve => setTimeout(resolve, UTXO_RETRY_DELAY_MS));
+			}
+		}
 
 		if (utxos.length === 0) {
 			throw new Error('No UTXOs available - wallet may be empty or APIs are down');
@@ -259,24 +274,36 @@ export async function sendUtxo(chain, toAddress, amount) {
 			}
 		}
 
+		// ── Pre-fetch all legacy tx hexes in parallel ─────────────────────────
+		// Doing this BEFORE building the PSBT means we get the network errors
+		// early and don't leave a half-built transaction.
+		const legacyTxHexMap = {};
+		const legacyFetches = selectedUtxos
+			.filter(utxo => !utxo.script_hex || utxo.script_hex.startsWith('76a914'))
+			.map(async utxo => {
+				if (legacyTxHexMap[utxo.transaction_hash]) return; // already queued
+				const hex = await fetchTransactionHex(chain, utxo.transaction_hash);
+				if (!hex) {
+					throw new Error(`Could not fetch raw transaction for ${utxo.transaction_hash}. The UTXO may still be propagating — try again in a few seconds.`);
+				}
+				legacyTxHexMap[utxo.transaction_hash] = hex;
+			});
+
+		// Wait for all tx hex fetches in parallel
+		await Promise.all(legacyFetches);
+
 		// Build transaction
 		const psbt = new bitcoin.Psbt({ network: config.network || bitcoin.networks.bitcoin });
 
-		// Add inputs
+		// Add inputs (all tx hexes are already in memory)
 		for (const utxo of selectedUtxos) {
 			const isLegacy = !utxo.script_hex || utxo.script_hex.startsWith('76a914');
 
 			if (isLegacy) {
-				// Legacy addresses need full transaction hex
-				const txHex = await fetchTransactionHex(chain, utxo.transaction_hash);
-				if (!txHex) {
-					throw new Error(`Could not fetch transaction hex for ${utxo.transaction_hash}`);
-				}
-
 				psbt.addInput({
 					hash: utxo.transaction_hash,
 					index: utxo.index,
-					nonWitnessUtxo: Buffer.from(txHex, 'hex')
+					nonWitnessUtxo: Buffer.from(legacyTxHexMap[utxo.transaction_hash], 'hex')
 				});
 			} else {
 				// SegWit addresses

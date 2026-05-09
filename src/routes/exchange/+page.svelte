@@ -1,829 +1,1135 @@
+<!-- 
+  Rivara Wallet
+  Copyright (c) 2024-2026 DogeGage
+  Licensed under DogeGage Source Available License
+-->
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { RefreshCw, Settings, Lock, ArrowDownUp, Copy, Check, ExternalLink, Wallet, TrendingUp } from 'lucide-svelte';
-	import { wallet, isUnlocked } from '$lib/stores/wallet';
-	import { walletService } from '$lib/services/wallet-service';
-	import { changeNowService } from '$lib/services/changenow-service';
-	import { sendTransaction, sendUSDC, validateAddress } from '$lib/services/send';
-	import type { CryptoChain } from '$lib/types';
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import {
+    RefreshCw,
+    Settings,
+    Lock,
+    ArrowDownUp,
+    Copy,
+    Check,
+    ExternalLink,
+    Wallet,
+    TrendingUp,
+  } from "lucide-svelte";
+  import { wallet, isUnlocked } from "$lib/stores/wallet";
+  import { walletService } from "$lib/services/wallet-service";
+  import { changeNowService } from "$lib/services/changenow-service";
+  import {
+    sendTransaction,
+    sendUSDC,
+    validateAddress,
+  } from "$lib/services/send";
+  import type { CryptoChain } from "$lib/types";
 
-	// View state: 'form' or 'status'
-	let view = 'form';
+  // View state: 'form' or 'status'
+  let view = "form";
 
-	// Exchange form state (min amounts per pair; 0 = no minimum)
-	const MIN_AMOUNTS: Record<string, Record<string, number>> = {
-		'BTC': { 'ETH': 0, 'SOL': 0, 'XTZ': 0, 'TRX': 0, 'DOGE': 0, 'LTC': 0, 'POL': 0, 'USDC_ETH': 0, 'USDC_POL': 0 },
-		'DOGE': { 'BTC': 100, 'ETH': 100, 'SOL': 100, 'XTZ': 100, 'TRX': 100, 'LTC': 100, 'POL': 100, 'USDC_ETH': 100, 'USDC_POL': 100 },
-		'LTC': { 'BTC': 0.01, 'ETH': 0.01, 'SOL': 0.01, 'XTZ': 0.01, 'TRX': 0.01, 'DOGE': 0.01, 'POL': 0.01, 'USDC_ETH': 0.01, 'USDC_POL': 0.01 },
-		'ETH': { 'BTC': 0.01, 'SOL': 0.01, 'XTZ': 0.01, 'TRX': 0.01, 'DOGE': 0.01, 'LTC': 0.01, 'POL': 0.01, 'USDC_ETH': 0.01, 'USDC_POL': 0.01 },
-		'POL': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'USDC_ETH': 1, 'USDC_POL': 1 },
-		'SOL': { 'BTC': 0.000525, 'ETH': 0.000525, 'XTZ': 0.000525, 'TRX': 0.000525, 'DOGE': 0.000525, 'LTC': 0.000525, 'POL': 0.000525, 'USDC_ETH': 0.000525, 'USDC_POL': 0.000525 },
-		'XTZ': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1, 'USDC_ETH': 1, 'USDC_POL': 1 },
-		'TRX': { 'BTC': 10, 'ETH': 10, 'SOL': 10, 'XTZ': 10, 'DOGE': 10, 'LTC': 10, 'POL': 10, 'USDC_ETH': 10, 'USDC_POL': 10 },
-		'USDC_ETH': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1, 'USDC_POL': 1 },
-		'USDC_POL': { 'BTC': 1, 'ETH': 1, 'SOL': 1, 'XTZ': 1, 'TRX': 1, 'DOGE': 1, 'LTC': 1, 'POL': 1, 'USDC_ETH': 1 }
-	};
+  // Exchange form state (min amounts per pair; 0 = no minimum)
+  const MIN_AMOUNTS: Record<string, Record<string, number>> = {
+    BTC: {
+      ETH: 0,
+      SOL: 0,
+      TRX: 0,
+      DOGE: 0,
+      LTC: 0,
+      POL: 0,
+      USDC_ETH: 0,
+      USDC_POL: 0,
+    },
+    DOGE: {
+      BTC: 100,
+      ETH: 100,
+      SOL: 100,
+      TRX: 100,
+      LTC: 100,
+      POL: 100,
+      USDC_ETH: 100,
+      USDC_POL: 100,
+    },
+    LTC: {
+      BTC: 0.01,
+      ETH: 0.01,
+      SOL: 0.01,
+      TRX: 0.01,
+      DOGE: 0.01,
+      POL: 0.01,
+      USDC_ETH: 0.01,
+      USDC_POL: 0.01,
+    },
+    ETH: {
+      BTC: 0.01,
+      SOL: 0.01,
+      TRX: 0.01,
+      DOGE: 0.01,
+      LTC: 0.01,
+      POL: 0.01,
+      USDC_ETH: 0.01,
+      USDC_POL: 0.01,
+    },
+    POL: {
+      BTC: 1,
+      ETH: 1,
+      SOL: 1,
+      TRX: 1,
+      DOGE: 1,
+      LTC: 1,
+      USDC_ETH: 1,
+      USDC_POL: 1,
+    },
+    SOL: {
+      BTC: 0.000525,
+      ETH: 0.000525,
+      TRX: 0.000525,
+      DOGE: 0.000525,
+      LTC: 0.000525,
+      POL: 0.000525,
+      USDC_ETH: 0.000525,
+      USDC_POL: 0.000525,
+    },
+    TRX: {
+      BTC: 10,
+      ETH: 10,
+      SOL: 10,
+      DOGE: 10,
+      LTC: 10,
+      POL: 10,
+      USDC_ETH: 10,
+      USDC_POL: 10,
+    },
+    USDC_ETH: {
+      BTC: 1,
+      ETH: 1,
+      SOL: 1,
+      TRX: 1,
+      DOGE: 1,
+      LTC: 1,
+      POL: 1,
+      USDC_POL: 1,
+    },
+    USDC_POL: {
+      BTC: 1,
+      ETH: 1,
+      SOL: 1,
+      TRX: 1,
+      DOGE: 1,
+      LTC: 1,
+      POL: 1,
+      USDC_ETH: 1,
+    },
+  };
 
-	// Symbol to chain for address validation and send (USDC uses same chain as ETH/POL)
-	const SYMBOL_TO_CHAIN: Record<string, CryptoChain> = {
-		'BTC': 'bitcoin',
-		'DOGE': 'dogecoin',
-		'LTC': 'litecoin',
-		'ETH': 'ethereum',
-		'POL': 'polygon',
-		'SOL': 'solana',
-		'AVAX': 'avalanche',
-		'BNB': 'bsc',
-		'TRX': 'tron',
-		'USDC_ETH': 'ethereum',
-		'USDC_POL': 'polygon'
-	};
+  // Symbol to chain for address validation and send (USDC uses same chain as ETH/POL)
+  const SYMBOL_TO_CHAIN: Record<string, CryptoChain> = {
+    BTC: "bitcoin",
+    DOGE: "dogecoin",
+    LTC: "litecoin",
+    ETH: "ethereum",
+    POL: "polygon",
+    SOL: "solana",
+    AVAX: "avalanche",
+    BNB: "bsc",
+    TRX: "tron",
+    USDC_ETH: "ethereum",
+    USDC_POL: "polygon",
+  };
 
-	let fromCurrency = 'BTC';
-	let toCurrency = 'ETH';
-	let fromAmount = '';
-	let toAmount = '';
-	let customAddress = false;
-	let recipientAddress = '';
-	let error = '';
-	let estimating = false;
-	let countdown = 0;
-	let countdownInterval: any = null;
-	let estimateTimeout: any = null;
-	let sending = false;
+  let fromCurrency = "BTC";
+  let toCurrency = "ETH";
+  let fromAmount = "";
+  let toAmount = "";
+  let customAddress = false;
+  let recipientAddress = "";
+  let error = "";
+  let estimating = false;
+  let countdown = 0;
+  let countdownInterval: any = null;
+  let estimateTimeout: any = null;
+  let sending = false;
 
-	// Exchange status state
-	let exchangeId = '';
-	let status = 'waiting';
-	let statusMessage = 'Waiting for deposit confirmation...';
-	let txHash = '';
-	let payinAddress = '';
-	let checkInterval: any = null;
-	let copied = false;
-	let stressClicks = 0;
+  // Exchange status state
+  let exchangeId = "";
+  let status = "waiting";
+  let statusMessage = "Waiting for deposit confirmation...";
+  let txHash = "";
+  let payinAddress = "";
+  let checkInterval: any = null;
+  let copied = false;
+  let stressClicks = 0;
 
-	// Cat modal state
-	let showCatModal = false;
-	let catMessage = '';
-	let catImageUrl = '';
+  // Cat modal state
+  let showCatModal = false;
+  let catMessage = "";
+  let catImageUrl = "";
 
-	const steps = [
-		{ id: 'waiting', label: 'Waiting', icon: '⏳' },
-		{ id: 'confirming', label: 'Confirming', icon: '✓' },
-		{ id: 'exchanging', label: 'Exchanging', icon: '🔄' },
-		{ id: 'sending', label: 'Sending', icon: '📤' },
-		{ id: 'finished', label: 'Complete', icon: '✅' }
-	];
+  const steps = [
+    { id: "waiting", label: "Waiting", icon: "⏳" },
+    { id: "confirming", label: "Confirming", icon: "✓" },
+    { id: "exchanging", label: "Exchanging", icon: "🔄" },
+    { id: "sending", label: "Sending", icon: "📤" },
+    { id: "finished", label: "Complete", icon: "✅" },
+  ];
 
-	$: currentWallet = $wallet;
-	$: ethUsdc = currentWallet?.detectedTokens?.ethereum?.find((t: any) => t.symbol === 'USDC');
-	$: polyUsdc = currentWallet?.detectedTokens?.polygon?.find((t: any) => t.symbol === 'USDC');
-	$: currencies = [
-		{ symbol: 'BTC', name: 'Bitcoin', balance: currentWallet?.bitcoin?.balance || '0', address: currentWallet?.bitcoin?.address || '' },
-		{ symbol: 'DOGE', name: 'Dogecoin', balance: currentWallet?.dogecoin?.balance || '0', address: currentWallet?.dogecoin?.address || '' },
-		{ symbol: 'LTC', name: 'Litecoin', balance: currentWallet?.litecoin?.balance || '0', address: currentWallet?.litecoin?.address || '' },
-		{ symbol: 'ETH', name: 'Ethereum', balance: currentWallet?.ethereum?.balance || '0', address: currentWallet?.ethereum?.address || '' },
-		{ symbol: 'POL', name: 'Polygon', balance: currentWallet?.polygon?.balance || '0', address: currentWallet?.polygon?.address || '' },
-		{ symbol: 'SOL', name: 'Solana', balance: currentWallet?.solana?.balance || '0', address: currentWallet?.solana?.address || '' },
-		{ symbol: 'AVAX', name: 'Avalanche', balance: currentWallet?.avalanche?.balance || '0', address: currentWallet?.avalanche?.address || '' },
-		{ symbol: 'BNB', name: 'BNB Chain', balance: currentWallet?.bsc?.balance || '0', address: currentWallet?.bsc?.address || '' },
-		{ symbol: 'TRX', name: 'Tron', balance: currentWallet?.tron?.balance || '0', address: currentWallet?.tron?.address || '' },
-		{ symbol: 'USDC_ETH', name: 'USD Coin (Ethereum)', balance: ethUsdc?.balance || '0', address: currentWallet?.ethereum?.address || '' },
-		{ symbol: 'USDC_POL', name: 'USD Coin (Polygon)', balance: polyUsdc?.balance || '0', address: currentWallet?.polygon?.address || '' }
-	];
+  $: currentWallet = $wallet;
+  $: ethUsdc = currentWallet?.detectedTokens?.ethereum?.find(
+    (t: any) => t.symbol === "USDC",
+  );
+  $: polyUsdc = currentWallet?.detectedTokens?.polygon?.find(
+    (t: any) => t.symbol === "USDC",
+  );
+  $: currencies = [
+    {
+      symbol: "BTC",
+      name: "Bitcoin",
+      balance: currentWallet?.bitcoin?.balance || "0",
+      address: currentWallet?.bitcoin?.address || "",
+    },
+    {
+      symbol: "DOGE",
+      name: "Dogecoin",
+      balance: currentWallet?.dogecoin?.balance || "0",
+      address: currentWallet?.dogecoin?.address || "",
+    },
+    {
+      symbol: "LTC",
+      name: "Litecoin",
+      balance: currentWallet?.litecoin?.balance || "0",
+      address: currentWallet?.litecoin?.address || "",
+    },
+    {
+      symbol: "ETH",
+      name: "Ethereum",
+      balance: currentWallet?.ethereum?.balance || "0",
+      address: currentWallet?.ethereum?.address || "",
+    },
+    {
+      symbol: "POL",
+      name: "Polygon",
+      balance: currentWallet?.polygon?.balance || "0",
+      address: currentWallet?.polygon?.address || "",
+    },
+    {
+      symbol: "SOL",
+      name: "Solana",
+      balance: currentWallet?.solana?.balance || "0",
+      address: currentWallet?.solana?.address || "",
+    },
+    {
+      symbol: "AVAX",
+      name: "Avalanche",
+      balance: currentWallet?.avalanche?.balance || "0",
+      address: currentWallet?.avalanche?.address || "",
+    },
+    {
+      symbol: "BNB",
+      name: "BNB Chain",
+      balance: currentWallet?.bsc?.balance || "0",
+      address: currentWallet?.bsc?.address || "",
+    },
+    {
+      symbol: "TRX",
+      name: "Tron",
+      balance: currentWallet?.tron?.balance || "0",
+      address: currentWallet?.tron?.address || "",
+    },
+    {
+      symbol: "USDC_ETH",
+      name: "USD Coin (Ethereum)",
+      balance: ethUsdc?.balance || "0",
+      address: currentWallet?.ethereum?.address || "",
+    },
+    {
+      symbol: "USDC_POL",
+      name: "USD Coin (Polygon)",
+      balance: polyUsdc?.balance || "0",
+      address: currentWallet?.polygon?.address || "",
+    },
+  ];
 
-	$: fromCrypto = currencies.find(c => c.symbol === fromCurrency);
-	$: toCrypto = currencies.find(c => c.symbol === toCurrency);
-	$: minAmount = MIN_AMOUNTS[fromCurrency]?.[toCurrency] || 0;
-	$: canExchange = fromAmount && toAmount && !estimating && !error && !sending && parseFloat(fromAmount) >= minAmount && 
-		parseFloat(fromAmount) <= parseFloat(fromCrypto?.balance || '0') &&
-		(!customAddress || (recipientAddress && isValidAddress(recipientAddress, toCurrency)));
-	$: currentStepIndex = steps.findIndex(s => s.id === status);
-	$: progress = ((currentStepIndex + 1) / steps.length) * 100;
+  $: fromCrypto = currencies.find((c) => c.symbol === fromCurrency);
+  $: toCrypto = currencies.find((c) => c.symbol === toCurrency);
+  $: minAmount = MIN_AMOUNTS[fromCurrency]?.[toCurrency] || 0;
+  $: canExchange =
+    fromAmount &&
+    toAmount &&
+    !estimating &&
+    !error &&
+    !sending &&
+    parseFloat(fromAmount) >= minAmount &&
+    parseFloat(fromAmount) <= parseFloat(fromCrypto?.balance || "0") &&
+    (!customAddress ||
+      (recipientAddress && isValidAddress(recipientAddress, toCurrency)));
+  $: currentStepIndex = steps.findIndex((s) => s.id === status);
+  $: progress = ((currentStepIndex + 1) / steps.length) * 100;
 
-	// Address validation (matches old version)
-	function isValidAddress(address: string, currency: string): boolean {
-		const chain = SYMBOL_TO_CHAIN[currency];
-		if (!chain) return true;
-		return validateAddress(chain, address);
-	}
+  // Address validation (matches old version)
+  function isValidAddress(address: string, currency: string): boolean {
+    const chain = SYMBOL_TO_CHAIN[currency];
+    if (!chain) return true;
+    return validateAddress(chain, address);
+  }
 
-	// Get wallet address for a currency symbol
-	function getWalletAddress(symbol: string): string {
-		const crypto = currencies.find(c => c.symbol === symbol);
-		return crypto?.address || '';
-	}
+  // Get wallet address for a currency symbol
+  function getWalletAddress(symbol: string): string {
+    const crypto = currencies.find((c) => c.symbol === symbol);
+    return crypto?.address || "";
+  }
 
-	// Register test command globally (available as soon as component loads)
-	if (typeof window !== 'undefined') {
-		(window as any).teststatus = (testStatus = 'exchanging') => {
-			exchangeId = 'test-' + Math.random().toString(36).substr(2, 9);
-			fromAmount = '0.001';
-			toAmount = '0.015';
-			fromCurrency = 'BTC';
-			toCurrency = 'ETH';
-			view = 'status';
-			status = testStatus;
-			const statusMessages: Record<string, string> = {
-				'waiting': 'Waiting for deposit confirmation...',
-				'confirming': 'Confirming your transaction on the blockchain...',
-				'exchanging': 'Exchanging your crypto...',
-				'sending': 'Sending ETH to your wallet...',
-				'finished': '🎉 Exchange complete!',
-				'failed': 'Exchange failed. Please try again.'
-			};
-			statusMessage = statusMessages[testStatus] || 'Exchanging your crypto...';
-			console.log('✅ Test status view activated! Exchange ID:', exchangeId);
-			console.log('Available statuses: waiting, confirming, exchanging, sending, finished, failed');
-		};
-		console.log('💡 Test command available: teststatus("status")');
-	}
+  // Register test command globally (available as soon as component loads)
+  if (typeof window !== "undefined") {
+    (window as any).teststatus = (testStatus = "exchanging") => {
+      exchangeId = "test-" + Math.random().toString(36).substr(2, 9);
+      fromAmount = "0.001";
+      toAmount = "0.015";
+      fromCurrency = "BTC";
+      toCurrency = "ETH";
+      view = "status";
+      status = testStatus;
+      const statusMessages: Record<string, string> = {
+        waiting: "Waiting for deposit confirmation...",
+        confirming: "Confirming your transaction on the blockchain...",
+        exchanging: "Exchanging your crypto...",
+        sending: "Sending ETH to your wallet...",
+        finished: "🎉 Exchange complete!",
+        failed: "Exchange failed. Please try again.",
+      };
+      statusMessage = statusMessages[testStatus] || "Exchanging your crypto...";
+      console.log("✅ Test status view activated! Exchange ID:", exchangeId);
+      console.log(
+        "Available statuses: waiting, confirming, exchanging, sending, finished, failed",
+      );
+    };
+    console.log('💡 Test command available: teststatus("status")');
+  }
 
-	// Reactive auth guard
-	$: if (!$isUnlocked) {
-		goto('/unlock');
-	}
+  // Reactive auth guard
+  $: if (!$isUnlocked) {
+    goto("/unlock");
+  }
 
-	onMount(async () => {
-		if (!$isUnlocked) return;
+  onMount(async () => {
+    if (!$isUnlocked) return;
 
-		// Load wallet into store and hydrate with any cached balances for instant details
-		const walletData = walletService.getWallet();
-		if (walletData) {
-			wallet.set(walletData);
-			await walletService.hydrateWalletFromCache();
-		}
+    // Load wallet into store and hydrate with any cached balances for instant details
+    const walletData = walletService.getWallet();
+    if (walletData) {
+      wallet.set(walletData);
+      await walletService.hydrateWalletFromCache();
+    }
 
-		// Cleanup function
-		return () => {
-			if (checkInterval !== null) {
-				clearInterval(checkInterval);
-				checkInterval = null;
-			}
-			if (countdownInterval !== null) {
-				clearInterval(countdownInterval);
-				countdownInterval = null;
-			}
-			if (estimateTimeout !== null) {
-				clearTimeout(estimateTimeout);
-				estimateTimeout = null;
-			}
-		};
-	});
+    // Cleanup function
+    return () => {
+      if (checkInterval !== null) {
+        clearInterval(checkInterval);
+        checkInterval = null;
+      }
+      if (countdownInterval !== null) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      if (estimateTimeout !== null) {
+        clearTimeout(estimateTimeout);
+        estimateTimeout = null;
+      }
+    };
+  });
 
-	async function updateFromAmount(value: string) {
-		if (value && !/^\d*\.?\d*$/.test(value)) return;
-		
-		fromAmount = value;
-		error = '';
+  async function updateFromAmount(value: string) {
+    if (value && !/^\d*\.?\d*$/.test(value)) return;
 
-		if (estimateTimeout) clearTimeout(estimateTimeout);
+    fromAmount = value;
+    error = "";
 
-		if (value && parseFloat(value) > 0) {
-			if (parseFloat(value) < minAmount) {
-				error = `Minimum amount is ${minAmount} ${fromCurrency}`;
-				toAmount = '';
-				return;
-			}
+    if (estimateTimeout) clearTimeout(estimateTimeout);
 
-			estimateTimeout = setTimeout(async () => {
-				estimating = true;
-				const fromCode = changeNowService.getCurrencyCode(fromCurrency);
-				const toCode = changeNowService.getCurrencyCode(toCurrency);
-				const estimate = await changeNowService.getEstimate(fromCode, toCode, value);
-				
-				if (estimate?.toAmount) {
-					toAmount = estimate.toAmount;
-				} else {
-					toAmount = '';
-				}
-				estimating = false;
-			}, 500);
-		} else {
-			toAmount = '';
-		}
-	}
+    if (value && parseFloat(value) > 0) {
+      if (parseFloat(value) < minAmount) {
+        error = `Minimum amount is ${minAmount} ${fromCurrency}`;
+        toAmount = "";
+        return;
+      }
 
-	function swapCurrencies() {
-		const temp = fromCurrency;
-		fromCurrency = toCurrency;
-		toCurrency = temp;
-		fromAmount = '';
-		toAmount = '';
-	}
+      estimateTimeout = setTimeout(async () => {
+        estimating = true;
+        const fromCode = changeNowService.getCurrencyCode(fromCurrency);
+        const toCode = changeNowService.getCurrencyCode(toCurrency);
+        const estimate = await changeNowService.getEstimate(
+          fromCode,
+          toCode,
+          value,
+        );
 
-	async function initiateExchange() {
-		if (countdown > 0) {
-			if (countdownInterval !== null) {
-				clearInterval(countdownInterval);
-				countdownInterval = null;
-			}
-			countdown = 0;
-			return;
-		}
+        if (estimate?.toAmount) {
+          toAmount = estimate.toAmount;
+        } else {
+          toAmount = "";
+        }
+        estimating = false;
+      }, 500);
+    } else {
+      toAmount = "";
+    }
+  }
 
-		countdown = 5;
-		countdownInterval = setInterval(() => {
-			countdown--;
-			if (countdown <= 0) {
-				if (countdownInterval !== null) {
-					clearInterval(countdownInterval);
-					countdownInterval = null;
-				}
-				executeExchange();
-			}
-		}, 1000);
-	}
+  function swapCurrencies() {
+    const temp = fromCurrency;
+    fromCurrency = toCurrency;
+    toCurrency = temp;
+    fromAmount = "";
+    toAmount = "";
+  }
 
-	async function executeExchange() {
-		try {
-			error = '';
-			sending = true;
+  async function initiateExchange() {
+    if (countdown > 0) {
+      if (countdownInterval !== null) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      countdown = 0;
+      return;
+    }
 
-			// Check balance
-			const userBalance = parseFloat(fromCrypto?.balance || '0');
-			const sendAmount = parseFloat(fromAmount);
+    countdown = 5;
+    countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        if (countdownInterval !== null) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+        }
+        executeExchange();
+      }
+    }, 1000);
+  }
 
-			if (sendAmount > userBalance) {
-				error = `Insufficient balance. You have ${userBalance} ${fromCurrency} but trying to send ${sendAmount} ${fromCurrency}`;
-				sending = false;
-				return;
-			}
+  async function executeExchange() {
+    try {
+      error = "";
+      sending = true;
 
-			// Get recipient address
-			const recipientAddr = customAddress ? recipientAddress : getWalletAddress(toCurrency);
-			
-			if (!recipientAddr) {
-				error = 'Could not get recipient address';
-				sending = false;
-				return;
-			}
+      // Check balance
+      const userBalance = parseFloat(fromCrypto?.balance || "0");
+      const sendAmount = parseFloat(fromAmount);
 
-			// Validate custom address
-			if (customAddress && !isValidAddress(recipientAddress, toCurrency)) {
-				error = `Invalid ${toCurrency} address format`;
-				sending = false;
-				return;
-			}
+      if (sendAmount > userBalance) {
+        error = `Insufficient balance. You have ${userBalance} ${fromCurrency} but trying to send ${sendAmount} ${fromCurrency}`;
+        sending = false;
+        return;
+      }
 
-			const refundAddr = getWalletAddress(fromCurrency);
-			if (!refundAddr) {
-				error = 'Could not get refund address';
-				sending = false;
-				return;
-			}
+      // Get recipient address
+      const recipientAddr = customAddress
+        ? recipientAddress
+        : getWalletAddress(toCurrency);
 
-			// Create exchange via ChangeNow (correct param order from old version)
-			const fromCode = changeNowService.getCurrencyCode(fromCurrency);
-			const toCode = changeNowService.getCurrencyCode(toCurrency);
+      if (!recipientAddr) {
+        error = "Could not get recipient address";
+        sending = false;
+        return;
+      }
 
-			console.log('Creating exchange:', {
-				from: fromCode,
-				to: toCode,
-				amount: fromAmount,
-				toAddress: recipientAddr,
-				refundAddress: refundAddr
-			});
-			
-			const result = await changeNowService.createExchange(
-				fromCode,
-				toCode,
-				fromAmount,
-				recipientAddr,
-				refundAddr
-			);
+      // Validate custom address
+      if (customAddress && !isValidAddress(recipientAddress, toCurrency)) {
+        error = `Invalid ${toCurrency} address format`;
+        sending = false;
+        return;
+      }
 
-			console.log('Exchange response:', result);
-			
-			if (!result || !result.id) {
-				error = (result as any)?.error || 'Failed to create exchange';
-				sending = false;
-				return;
-			}
+      const refundAddr = getWalletAddress(fromCurrency);
+      if (!refundAddr) {
+        error = "Could not get refund address";
+        sending = false;
+        return;
+      }
 
-			// Auto-send the crypto to ChangeNow (ported from old version)
-			await autoSendToExchange(result);
-			
-		} catch (err: any) {
-			error = err.message || 'Failed to create exchange';
-			sending = false;
-		}
-	}
+      // Create exchange via ChangeNow (correct param order from old version)
+      const fromCode = changeNowService.getCurrencyCode(fromCurrency);
+      const toCode = changeNowService.getCurrencyCode(toCurrency);
 
-	async function autoSendToExchange(exchange: any) {
-		try {
-			const amount = fromAmount; // Use user's input amount
-			const toAddr = exchange.payinAddress;
+      console.log("Creating exchange:", {
+        from: fromCode,
+        to: toCode,
+        amount: fromAmount,
+        toAddress: recipientAddr,
+        refundAddress: refundAddr,
+      });
 
-			// Validate the exchange response matches user's intent
-			if (parseFloat(exchange.fromAmount) !== parseFloat(amount)) {
-				throw new Error('Exchange amount mismatch. Please try again.');
-			}
+      const result = await changeNowService.createExchange(
+        fromCode,
+        toCode,
+        fromAmount,
+        recipientAddr,
+        refundAddr,
+      );
 
-			// Validate payin address format
-			if (!isValidAddress(toAddr, fromCurrency)) {
-				throw new Error('Invalid payin address from exchange service');
-			}
+      console.log("Exchange response:", result);
 
-			let hash: string;
+      if (!result || !result.id) {
+        error = (result as any)?.error || "Failed to create exchange";
+        sending = false;
+        return;
+      }
 
-			if (fromCurrency === 'USDC_ETH' || fromCurrency === 'USDC_POL') {
-				const chain = fromCurrency === 'USDC_ETH' ? 'ethereum' : 'polygon';
-				console.log('Auto-sending USDC to exchange:', { chain, toAddr, amount });
-				hash = await sendUSDC(chain, toAddr, amount);
-			} else {
-				const chain = SYMBOL_TO_CHAIN[fromCurrency];
-				if (!chain) {
-					throw new Error(`Unsupported currency: ${fromCurrency}`);
-				}
-				console.log('Auto-sending to exchange:', { chain, toAddr, amount });
-				hash = await sendTransaction({
-					chain,
-					toAddress: toAddr,
-					amount
-				});
-			}
+      // Auto-send the crypto to ChangeNow (ported from old version)
+      await autoSendToExchange(result);
+    } catch (err: any) {
+      error = err.message || "Failed to create exchange";
+      sending = false;
+    }
+  }
 
-			if (hash) {
-				// Switch to status view
-				exchangeId = exchange.id;
-				txHash = hash;
-				payinAddress = toAddr;
-				view = 'status';
-				status = 'confirming';
-				statusMessage = 'Confirming your transaction on the blockchain...';
-				sending = false;
+  async function autoSendToExchange(exchange: any) {
+    try {
+      const amount = fromAmount; // Use user's input amount
+      const toAddr = exchange.payinAddress;
 
-				// Start checking status
-				checkStatus();
-				checkInterval = setInterval(checkStatus, 10000);
-			} else {
-				throw new Error('Failed to send transaction');
-			}
-		} catch (err: any) {
-			console.error('Auto-send failed:', err);
-			sending = false;
+      // Validate the exchange response matches user's intent
+      if (parseFloat(exchange.fromAmount) !== parseFloat(amount)) {
+        throw new Error("Exchange amount mismatch. Please try again.");
+      }
 
-			let errorMsg = err.message;
-			if (errorMsg.includes('No UTXOs available')) {
-				errorMsg = `Your ${fromCurrency} wallet is empty or has no confirmed transactions. Please add funds first.`;
-			} else if (errorMsg.includes('Insufficient balance')) {
-				errorMsg = `Insufficient ${fromCurrency} balance.`;
-			}
+      // Validate payin address format
+      if (!isValidAddress(toAddr, fromCurrency)) {
+        throw new Error("Invalid payin address from exchange service");
+      }
 
-			error = `Failed to send: ${errorMsg}`;
-			
-			// If exchange was created but send failed, show the manual send info
-			if (exchange.payinAddress) {
-				error += `\n\nExchange created but not funded. You can manually send ${fromAmount} ${fromCurrency} to: ${exchange.payinAddress}`;
-			}
-		}
-	}
+      let hash: string;
 
-	async function checkStatus() {
-		try {
-			const result = await changeNowService.getExchangeStatus(exchangeId);
-			
-			if (!result) return;
+      if (fromCurrency === "USDC_ETH" || fromCurrency === "USDC_POL") {
+        const chain = fromCurrency === "USDC_ETH" ? "ethereum" : "polygon";
+        console.log("Auto-sending USDC to exchange:", {
+          chain,
+          toAddr,
+          amount,
+        });
+        hash = await sendUSDC(chain, toAddr, amount);
+      } else {
+        const chain = SYMBOL_TO_CHAIN[fromCurrency];
+        if (!chain) {
+          throw new Error(`Unsupported currency: ${fromCurrency}`);
+        }
+        console.log("Auto-sending to exchange:", { chain, toAddr, amount });
+        hash = await sendTransaction({
+          chain,
+          toAddress: toAddr,
+          amount,
+        });
+      }
 
-			if (result.status === 'waiting') {
-				status = 'waiting';
-				statusMessage = 'Waiting for deposit confirmation...';
-			} else if (result.status === 'confirming') {
-				status = 'confirming';
-				statusMessage = 'Confirming your transaction...';
-				txHash = result.payinHash || txHash;
-			} else if (result.status === 'exchanging') {
-				status = 'exchanging';
-				statusMessage = 'Exchanging your crypto...';
-			} else if (result.status === 'sending') {
-				status = 'sending';
-				statusMessage = `Sending ${toCrypto?.name ?? toCurrency} to your wallet...`;
-			} else if (result.status === 'finished') {
-				status = 'finished';
-				statusMessage = '🎉 Exchange complete!';
-				txHash = result.payoutHash || result.payinHash || txHash;
-				
-				await walletService.fetchBalances();
-				
-				if (checkInterval !== null) {
-					clearInterval(checkInterval);
-					checkInterval = null;
-				}
-			} else if (result.status === 'failed' || result.status === 'refunded') {
-				status = 'failed';
-				statusMessage = 'Exchange failed or refunded';
-				
-				if (checkInterval !== null) {
-					clearInterval(checkInterval);
-					checkInterval = null;
-				}
-			}
-		} catch (error) {
-			console.error('Failed to check status:', error);
-		}
-	}
+      if (hash) {
+        // Switch to status view
+        exchangeId = exchange.id;
+        txHash = hash;
+        payinAddress = toAddr;
+        view = "status";
+        status = "confirming";
+        statusMessage = "Confirming your transaction on the blockchain...";
+        sending = false;
 
-	async function copyToClipboard(text: string) {
-		await navigator.clipboard.writeText(text);
-		copied = true;
-		setTimeout(() => copied = false, 2000);
-	}
+        // Start checking status
+        checkStatus();
+        checkInterval = setInterval(checkStatus, 10000);
+      } else {
+        throw new Error("Failed to send transaction");
+      }
+    } catch (err: any) {
+      console.error("Auto-send failed:", err);
+      sending = false;
 
-	// Stress handler with cat modal (ported from old version)
-	function handleStress() {
-		stressClicks++;
+      let errorMsg = err.message;
+      if (errorMsg.includes("No UTXOs available")) {
+        errorMsg = `Your ${fromCurrency} wallet is empty or has no confirmed transactions. Please add funds first.`;
+      } else if (errorMsg.includes("Insufficient balance")) {
+        errorMsg = `Insufficient ${fromCurrency} balance.`;
+      }
 
-		const messages = [
-			"It's okay! Crypto exchanges take time ⏰",
-			"Your funds are safe with ChangeNow 🔒",
-			"Deep breaths... it'll be done soon 🧘",
-			"Go grab a coffee, you deserve it ☕",
-			"Blockchain confirmations are slow but secure 🛡️",
-			"Trust the process! 💪",
-			"Your crypto is on its way! 🚀",
-			"Patience is a virtue... and profitable 💰"
-		];
+      error = `Failed to send: ${errorMsg}`;
 
-		catMessage = messages[Math.floor(Math.random() * messages.length)];
-		catImageUrl = `https://cataas.com/cat?${Date.now()}`;
-		showCatModal = true;
-	}
+      // If exchange was created but send failed, show the manual send info
+      if (exchange.payinAddress) {
+        error += `\n\nExchange created but not funded. You can manually send ${fromAmount} ${fromCurrency} to: ${exchange.payinAddress}`;
+      }
+    }
+  }
 
-	function closeCatModal() {
-		showCatModal = false;
-	}
+  async function checkStatus() {
+    try {
+      const result = await changeNowService.getExchangeStatus(exchangeId);
 
-	function backToForm() {
-		view = 'form';
-		if (checkInterval !== null) {
-			clearInterval(checkInterval);
-			checkInterval = null;
-		}
-		fromAmount = '';
-		toAmount = '';
-		error = '';
-		sending = false;
-	}
+      if (!result) return;
 
-	function lockWallet() {
-		walletService.lock();
-		goto('/unlock');
-	}
+      if (result.status === "waiting") {
+        status = "waiting";
+        statusMessage = "Waiting for deposit confirmation...";
+      } else if (result.status === "confirming") {
+        status = "confirming";
+        statusMessage = "Confirming your transaction...";
+        txHash = result.payinHash || txHash;
+      } else if (result.status === "exchanging") {
+        status = "exchanging";
+        statusMessage = "Exchanging your crypto...";
+      } else if (result.status === "sending") {
+        status = "sending";
+        statusMessage = `Sending ${toCrypto?.name ?? toCurrency} to your wallet...`;
+      } else if (result.status === "finished") {
+        status = "finished";
+        statusMessage = "🎉 Exchange complete!";
+        txHash = result.payoutHash || result.payinHash || txHash;
+
+        await walletService.fetchBalances();
+
+        if (checkInterval !== null) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
+      } else if (result.status === "failed" || result.status === "refunded") {
+        status = "failed";
+        statusMessage = "Exchange failed or refunded";
+
+        if (checkInterval !== null) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to check status:", error);
+    }
+  }
+
+  async function copyToClipboard(text: string) {
+    await navigator.clipboard.writeText(text);
+    copied = true;
+    setTimeout(() => (copied = false), 2000);
+  }
+
+  // Stress handler with cat modal (ported from old version)
+  function handleStress() {
+    stressClicks++;
+
+    const messages = [
+      "It's okay! Crypto exchanges take time ⏰",
+      "Your funds are safe with ChangeNow 🔒",
+      "Deep breaths... it'll be done soon 🧘",
+      "Go grab a coffee, you deserve it ☕",
+      "Blockchain confirmations are slow but secure 🛡️",
+      "Trust the process! 💪",
+      "Your crypto is on its way! 🚀",
+      "Patience is a virtue... and profitable 💰",
+    ];
+
+    catMessage = messages[Math.floor(Math.random() * messages.length)];
+    catImageUrl = `https://cataas.com/cat?${Date.now()}`;
+    showCatModal = true;
+  }
+
+  function closeCatModal() {
+    showCatModal = false;
+  }
+
+  function backToForm() {
+    view = "form";
+    if (checkInterval !== null) {
+      clearInterval(checkInterval);
+      checkInterval = null;
+    }
+    fromAmount = "";
+    toAmount = "";
+    error = "";
+    sending = false;
+  }
+
+  function lockWallet() {
+    walletService.lock();
+    goto("/unlock");
+  }
 </script>
 
 <div class="min-h-screen bg-[#070b10] flex flex-col">
-	<!-- Top Nav -->
-	<nav class="flex items-center justify-between px-4 md:px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5">
-		<div class="flex items-center gap-8">
-			<div class="flex items-center gap-2">
-				<span class="text-xl">⬢</span>
-				<span class="font-bold text-white">Rivara</span>
-			</div>
-			<div class="hidden md:flex gap-6">
-				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/wallet')}>Wallets</button>
-				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/portfolio')}>Portfolio</button>
-				<button class="text-sm font-semibold text-cyan-400 uppercase tracking-wider border-b-2 border-cyan-500 pb-1">Exchange</button>
-				<button class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition" on:click={() => goto('/settings')}>Settings</button>
-			</div>
-		</div>
-		<div class="flex items-center gap-3">
-			<button class="p-2 text-slate-400 hover:text-white transition" on:click={() => goto('/settings')}>
-				<Settings size={18} />
-			</button>
-			<button class="p-2 text-slate-400 hover:text-white transition" on:click={lockWallet}>
-				<Lock size={18} />
-			</button>
-		</div>
-	</nav>
+  <!-- Top Nav -->
+  <nav
+    class="flex items-center justify-between px-4 md:px-6 py-4 bg-stone-900/50 backdrop-blur-xl border-b border-white/5"
+  >
+    <div class="flex items-center gap-8">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">⬢</span>
+        <span class="font-bold text-white">Rivara</span>
+      </div>
+      <div class="hidden md:flex gap-6">
+        <button
+          class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition"
+          on:click={() => goto("/wallet")}>Wallets</button
+        >
+        <button
+          class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition"
+          on:click={() => goto("/portfolio")}>Portfolio</button
+        >
+        <button
+          class="text-sm font-semibold text-cyan-400 uppercase tracking-wider border-b-2 border-cyan-500 pb-1"
+          >Exchange</button
+        >
+        <button
+          class="text-sm font-semibold text-slate-500 hover:text-white uppercase tracking-wider transition"
+          on:click={() => goto("/settings")}>Settings</button
+        >
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button
+        class="p-2 text-slate-400 hover:text-white transition"
+        on:click={() => goto("/settings")}
+      >
+        <Settings size={18} />
+      </button>
+      <button
+        class="p-2 text-slate-400 hover:text-white transition"
+        on:click={lockWallet}
+      >
+        <Lock size={18} />
+      </button>
+    </div>
+  </nav>
 
-	<!-- Main Content -->
-	<div class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
-	<div class="flex items-center justify-center min-h-full">
-		{#if view === 'form'}
-			<!-- Exchange Form View -->
-			<div class="w-full max-w-6xl grid md:grid-cols-[1fr,400px] gap-6">
-				<!-- Exchange Form -->
-				<div class="space-y-6">
-					<!-- From Section -->
-					<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
-						<div class="flex items-center justify-between mb-4 flex-wrap gap-1">
-							<h3 class="text-white font-semibold">You Send</h3>
-							<span class="text-xs md:text-sm text-slate-400">{fromCrypto?.balance ?? '0'} {fromCrypto?.name ?? fromCurrency} available</span>
-						</div>
-						<div class="flex flex-col sm:flex-row gap-3">
-							<input 
-								type="text"
-								inputmode="decimal"
-								class="flex-1 px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white text-lg md:text-xl placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none {error ? 'border-red-500' : ''}"
-								placeholder="0.00"
-								value={fromAmount}
-								on:input={(e) => updateFromAmount(e.currentTarget.value)}
-							/>
-							<select 
-								class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none w-full sm:w-auto"
-								bind:value={fromCurrency}
-								on:change={() => updateFromAmount(fromAmount)}
-							>
-								{#each currencies as currency}
-									<option value={currency.symbol}>{currency.symbol} — {currency.name}</option>
-								{/each}
-							</select>
-						</div>
-						{#if error}
-							<div class="mt-2 text-sm text-red-400 whitespace-pre-line">{error}</div>
-						{/if}
-						{#if !error && minAmount > 0}
-							<div class="mt-2 text-sm text-slate-500">Minimum: {minAmount} {fromCurrency}</div>
-						{/if}
-					</div>
+  <!-- Main Content -->
+  <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
+    <div class="flex items-center justify-center min-h-full">
+      {#if view === "form"}
+        <!-- Exchange Form View -->
+        <div class="w-full max-w-6xl grid md:grid-cols-[1fr,400px] gap-6">
+          <!-- Exchange Form -->
+          <div class="space-y-6">
+            <!-- From Section -->
+            <div
+              class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6"
+            >
+              <div
+                class="flex items-center justify-between mb-4 flex-wrap gap-1"
+              >
+                <h3 class="text-white font-semibold">You Send</h3>
+                <span class="text-xs md:text-sm text-slate-400"
+                  >{fromCrypto?.balance ?? "0"}
+                  {fromCrypto?.name ?? fromCurrency} available</span
+                >
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  class="flex-1 px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white text-lg md:text-xl placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none {error
+                    ? 'border-red-500'
+                    : ''}"
+                  placeholder="0.00"
+                  value={fromAmount}
+                  on:input={(e) => updateFromAmount(e.currentTarget.value)}
+                />
+                <select
+                  class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none w-full sm:w-auto"
+                  bind:value={fromCurrency}
+                  on:change={() => updateFromAmount(fromAmount)}
+                >
+                  {#each currencies as currency}
+                    <option value={currency.symbol}
+                      >{currency.symbol} — {currency.name}</option
+                    >
+                  {/each}
+                </select>
+              </div>
+              {#if error}
+                <div class="mt-2 text-sm text-red-400 whitespace-pre-line">
+                  {error}
+                </div>
+              {/if}
+              {#if !error && minAmount > 0}
+                <div class="mt-2 text-sm text-slate-500">
+                  Minimum: {minAmount}
+                  {fromCurrency}
+                </div>
+              {/if}
+            </div>
 
-					<!-- Swap Button -->
-					<div class="flex justify-center">
-						<button 
-							class="p-3 bg-stone-800/50 border border-white/10 rounded-full text-white hover:bg-stone-700/50 transition"
-							on:click={swapCurrencies}
-						>
-							<ArrowDownUp size={20} />
-						</button>
-					</div>
+            <!-- Swap Button -->
+            <div class="flex justify-center">
+              <button
+                class="p-3 bg-stone-800/50 border border-white/10 rounded-full text-white hover:bg-stone-700/50 transition"
+                on:click={swapCurrencies}
+              >
+                <ArrowDownUp size={20} />
+              </button>
+            </div>
 
-					<!-- To Section -->
-					<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6">
-						<div class="flex items-center justify-between mb-4 flex-wrap gap-1">
-							<h3 class="text-white font-semibold">You Receive</h3>
-							<span class="text-xs md:text-sm text-slate-400 truncate max-w-[200px]">
-								To: {customAddress ? (recipientAddress ? recipientAddress.slice(0, 12) + '...' + recipientAddress.slice(-8) : 'Enter address') : 'My Wallet'}
-							</span>
-						</div>
-						<div class="flex flex-col sm:flex-row gap-3">
-							<input 
-								type="text"
-								class="flex-1 px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white text-lg md:text-xl placeholder-slate-600 outline-none"
-								placeholder="0.00"
-								value={toAmount}
-								readonly
-							/>
-							<select 
-								class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none w-full sm:w-auto"
-								bind:value={toCurrency}
-								on:change={() => updateFromAmount(fromAmount)}
-							>
-								{#each currencies as currency}
-									<option value={currency.symbol}>{currency.symbol} — {currency.name}</option>
-								{/each}
-							</select>
-						</div>
-						
-						<div class="mt-4">
-							<label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-								<input type="checkbox" bind:checked={customAddress} class="rounded" />
-								<span>Send to a different address</span>
-							</label>
-						</div>
+            <!-- To Section -->
+            <div
+              class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6"
+            >
+              <div
+                class="flex items-center justify-between mb-4 flex-wrap gap-1"
+              >
+                <h3 class="text-white font-semibold">You Receive</h3>
+                <span
+                  class="text-xs md:text-sm text-slate-400 truncate max-w-[200px]"
+                >
+                  To: {customAddress
+                    ? recipientAddress
+                      ? recipientAddress.slice(0, 12) +
+                        "..." +
+                        recipientAddress.slice(-8)
+                      : "Enter address"
+                    : "My Wallet"}
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  class="flex-1 px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white text-lg md:text-xl placeholder-slate-600 outline-none"
+                  placeholder="0.00"
+                  value={toAmount}
+                  readonly
+                />
+                <select
+                  class="px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none w-full sm:w-auto"
+                  bind:value={toCurrency}
+                  on:change={() => updateFromAmount(fromAmount)}
+                >
+                  {#each currencies as currency}
+                    <option value={currency.symbol}
+                      >{currency.symbol} — {currency.name}</option
+                    >
+                  {/each}
+                </select>
+              </div>
 
-						{#if customAddress}
-							<input 
-								type="text"
-								class="mt-3 w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
-								placeholder="Paste {toCrypto?.name ?? toCurrency} address"
-								bind:value={recipientAddress}
-							/>
-						{/if}
-					</div>
-				</div>
+              <div class="mt-4">
+                <label
+                  class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    bind:checked={customAddress}
+                    class="rounded"
+                  />
+                  <span>Send to a different address</span>
+                </label>
+              </div>
 
-				<!-- Exchange Details Sidebar -->
-				<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 h-fit">
-					<h4 class="text-white font-semibold mb-4">Exchange Details</h4>
-					
-					{#if fromAmount && parseFloat(fromAmount) > 0}
-						<div class="space-y-3 mb-6">
-							{#if toAmount && parseFloat(toAmount) > 0}
-								<div class="flex justify-between text-sm">
-									<span class="text-slate-400">Rate</span>
-									<span class="text-white">1 {fromCrypto?.name ?? fromCurrency} ≈ {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(6)} {toCrypto?.name ?? toCurrency}</span>
-								</div>
-							{:else if estimating}
-								<div class="flex justify-between text-sm">
-									<span class="text-slate-400">Rate</span>
-									<span class="text-slate-400">Estimating…</span>
-								</div>
-							{:else}
-								<div class="flex justify-between text-sm">
-									<span class="text-slate-400">Rate</span>
-									<span class="text-amber-400/90 text-xs">Rate unavailable for this pair</span>
-								</div>
-							{/if}
-							<div class="flex justify-between text-sm">
-								<span class="text-slate-400">You Send</span>
-								<span class="text-white">{fromAmount} {fromCrypto?.name ?? fromCurrency}</span>
-							</div>
-							<div class="flex justify-between text-sm">
-								<span class="text-slate-400">You Receive</span>
-								<span class="text-white">{toAmount ? `${toAmount} ${toCrypto?.name ?? toCurrency}` : '—'}</span>
-							</div>
-							<div class="flex justify-between text-sm">
-								<span class="text-slate-400">Network Fee</span>
-								<span class="text-white">Included</span>
-							</div>
-							<div class="flex justify-between text-sm">
-								<span class="text-slate-400">Est. Time</span>
-								<span class="text-white">5-30 min</span>
-							</div>
-						</div>
-					{:else}
-						<div class="text-center text-slate-500 text-sm py-8 mb-6">
-							Enter an amount to see exchange details
-						</div>
-					{/if}
+              {#if customAddress}
+                <input
+                  type="text"
+                  class="mt-3 w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-slate-600 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 transition-all outline-none"
+                  placeholder="Paste {toCrypto?.name ?? toCurrency} address"
+                  bind:value={recipientAddress}
+                />
+              {/if}
+            </div>
+          </div>
 
-					<button 
-						class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-						disabled={!canExchange}
-						on:click={initiateExchange}
-					>
-						{#if sending}
-							Sending transaction...
-						{:else if countdown > 0}
-							Cancel ({countdown}s)
-						{:else if fromAmount}
-							Exchange Now
-						{:else}
-							Enter Amount
-						{/if}
-					</button>
+          <!-- Exchange Details Sidebar -->
+          <div
+            class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 h-fit"
+          >
+            <h4 class="text-white font-semibold mb-4">Exchange Details</h4>
 
-					<div class="mt-4 text-center text-xs text-slate-500">
-						Powered by ChangeNow
-					</div>
-				</div>
-			</div>
-		{:else}
-			<!-- Exchange Status View -->
-			<div class="w-full max-w-3xl">
-				<div class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-8 shadow-2xl">
-					<!-- Header -->
-					<div class="text-center mb-6 md:mb-8">
-						<h1 class="text-2xl md:text-3xl font-bold text-white mb-2">Exchange in Progress</h1>
-						<p class="text-slate-400">{statusMessage}</p>
-					</div>
+            {#if fromAmount && parseFloat(fromAmount) > 0}
+              <div class="space-y-3 mb-6">
+                {#if toAmount && parseFloat(toAmount) > 0}
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Rate</span>
+                    <span class="text-white"
+                      >1 {fromCrypto?.name ?? fromCurrency} ≈ {(
+                        parseFloat(toAmount) / parseFloat(fromAmount)
+                      ).toFixed(6)}
+                      {toCrypto?.name ?? toCurrency}</span
+                    >
+                  </div>
+                {:else if estimating}
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Rate</span>
+                    <span class="text-slate-400">Estimating…</span>
+                  </div>
+                {:else}
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Rate</span>
+                    <span class="text-amber-400/90 text-xs"
+                      >Rate unavailable for this pair</span
+                    >
+                  </div>
+                {/if}
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-400">You Send</span>
+                  <span class="text-white"
+                    >{fromAmount} {fromCrypto?.name ?? fromCurrency}</span
+                  >
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-400">You Receive</span>
+                  <span class="text-white"
+                    >{toAmount
+                      ? `${toAmount} ${toCrypto?.name ?? toCurrency}`
+                      : "—"}</span
+                  >
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-400">Network Fee</span>
+                  <span class="text-white">Included</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-400">Est. Time</span>
+                  <span class="text-white">5-30 min</span>
+                </div>
+              </div>
+            {:else}
+              <div class="text-center text-slate-500 text-sm py-8 mb-6">
+                Enter an amount to see exchange details
+              </div>
+            {/if}
 
-					<!-- Progress Bar -->
-					<div class="mb-8">
-						<div class="relative h-2 bg-stone-800 rounded-full overflow-hidden mb-6">
-							<div 
-								class="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-600 to-cyan-600 transition-all duration-500 ease-out"
-								style="width: {progress}%"
-							></div>
-						</div>
+            <button
+              class="w-full py-4 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!canExchange}
+              on:click={initiateExchange}
+            >
+              {#if sending}
+                Sending transaction...
+              {:else if countdown > 0}
+                Cancel ({countdown}s)
+              {:else if fromAmount}
+                Exchange Now
+              {:else}
+                Enter Amount
+              {/if}
+            </button>
 
-						<!-- Steps -->
-						<div class="flex justify-between">
-							{#each steps as step, index}
-								<div class="flex flex-col items-center flex-1">
-									<div 
-										class="w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center text-base md:text-2xl mb-1 md:mb-2 transition-all duration-300 {
-											index <= currentStepIndex 
-												? 'bg-gradient-to-r from-cyan-600 to-cyan-600 scale-110' 
-												: 'bg-stone-800'
-										}"
-									>
-										{step.icon}
-									</div>
-									<div class="text-[10px] md:text-xs font-medium {index <= currentStepIndex ? 'text-white' : 'text-slate-500'} text-center">
-										{step.label}
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
+            <div class="mt-4 text-center text-xs text-slate-500">
+              Powered by ChangeNow
+            </div>
+          </div>
+        </div>
+      {:else}
+        <!-- Exchange Status View -->
+        <div class="w-full max-w-3xl">
+          <div
+            class="bg-stone-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-8 shadow-2xl"
+          >
+            <!-- Header -->
+            <div class="text-center mb-6 md:mb-8">
+              <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">
+                Exchange in Progress
+              </h1>
+              <p class="text-slate-400">{statusMessage}</p>
+            </div>
 
-					<!-- Exchange Details -->
-					<div class="bg-black/20 border border-white/5 rounded-xl p-4 md:p-6 mb-6 space-y-3 md:space-y-4">
-						<div class="flex justify-between items-center gap-2">
-							<span class="text-slate-400 text-sm shrink-0">Exchange ID</span>
-							<div class="flex items-center gap-2 min-w-0">
-								<span class="text-white font-mono text-xs md:text-sm truncate">{exchangeId}</span>
-								<button 
-									class="p-1 hover:bg-white/5 rounded transition"
-									on:click={() => copyToClipboard(exchangeId)}
-								>
-									{#if copied}
-										<Check size={16} class="text-green-400" />
-									{:else}
-										<Copy size={16} class="text-slate-400" />
-									{/if}
-								</button>
-							</div>
-						</div>
+            <!-- Progress Bar -->
+            <div class="mb-8">
+              <div
+                class="relative h-2 bg-stone-800 rounded-full overflow-hidden mb-6"
+              >
+                <div
+                  class="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-600 to-cyan-600 transition-all duration-500 ease-out"
+                  style="width: {progress}%"
+                ></div>
+              </div>
 
-						{#if txHash}
-							<div class="flex justify-between items-center gap-2">
-								<span class="text-slate-400 text-sm shrink-0">Transaction</span>
-								<span class="text-white font-mono text-xs md:text-sm truncate">{txHash.slice(0, 8)}...{txHash.slice(-8)}</span>
-							</div>
-						{/if}
+              <!-- Steps -->
+              <div class="flex justify-between">
+                {#each steps as step, index}
+                  <div class="flex flex-col items-center flex-1">
+                    <div
+                      class="w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center text-base md:text-2xl mb-1 md:mb-2 transition-all duration-300 {index <=
+                      currentStepIndex
+                        ? 'bg-gradient-to-r from-cyan-600 to-cyan-600 scale-110'
+                        : 'bg-stone-800'}"
+                    >
+                      {step.icon}
+                    </div>
+                    <div
+                      class="text-[10px] md:text-xs font-medium {index <=
+                      currentStepIndex
+                        ? 'text-white'
+                        : 'text-slate-500'} text-center"
+                    >
+                      {step.label}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            </div>
 
-						<div class="flex justify-between items-center">
-							<span class="text-slate-400 text-sm">Sending</span>
-							<span class="text-white font-semibold text-sm">{fromAmount} {fromCrypto?.name ?? fromCurrency}</span>
-						</div>
+            <!-- Exchange Details -->
+            <div
+              class="bg-black/20 border border-white/5 rounded-xl p-4 md:p-6 mb-6 space-y-3 md:space-y-4"
+            >
+              <div class="flex justify-between items-center gap-2">
+                <span class="text-slate-400 text-sm shrink-0">Exchange ID</span>
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-white font-mono text-xs md:text-sm truncate"
+                    >{exchangeId}</span
+                  >
+                  <button
+                    class="p-1 hover:bg-white/5 rounded transition"
+                    on:click={() => copyToClipboard(exchangeId)}
+                  >
+                    {#if copied}
+                      <Check size={16} class="text-green-400" />
+                    {:else}
+                      <Copy size={16} class="text-slate-400" />
+                    {/if}
+                  </button>
+                </div>
+              </div>
 
-						<div class="flex justify-between items-center">
-							<span class="text-slate-400 text-sm">Receiving</span>
-							<span class="text-white font-semibold text-sm">{toAmount} {toCrypto?.name ?? toCurrency}</span>
-						</div>
+              {#if txHash}
+                <div class="flex justify-between items-center gap-2">
+                  <span class="text-slate-400 text-sm shrink-0"
+                    >Transaction</span
+                  >
+                  <span class="text-white font-mono text-xs md:text-sm truncate"
+                    >{txHash.slice(0, 8)}...{txHash.slice(-8)}</span
+                  >
+                </div>
+              {/if}
 
-						<div class="flex justify-between items-center gap-2">
-							<span class="text-slate-400 text-sm shrink-0">To Address</span>
-							<span class="text-white font-mono text-xs md:text-sm truncate">{(customAddress ? recipientAddress : toCrypto?.address || '').slice(0, 8)}...{(customAddress ? recipientAddress : toCrypto?.address || '').slice(-6)}</span>
-						</div>
-					</div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400 text-sm">Sending</span>
+                <span class="text-white font-semibold text-sm"
+                  >{fromAmount} {fromCrypto?.name ?? fromCurrency}</span
+                >
+              </div>
 
-					<!-- Action Buttons -->
-					<div class="space-y-3">
-						{#if status === 'finished'}
-							<button 
-								class="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all shadow-lg shadow-green-500/25"
-								on:click={() => goto('/wallet')}
-							>
-								✅ View Wallet
-							</button>
-						{:else if status === 'failed'}
-							<button 
-								class="w-full py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold rounded-xl hover:from-red-500 hover:to-rose-500 transition-all shadow-lg shadow-red-500/25"
-								on:click={backToForm}
-							>
-								❌ Try Again
-							</button>
-						{:else}
-							<button 
-								class="w-full py-4 bg-stone-800 border border-white/10 text-white font-medium rounded-xl hover:bg-stone-700 transition-all"
-								on:click={handleStress}
-							>
-								😰 Click if stressed
-							</button>
-						{/if}
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400 text-sm">Receiving</span>
+                <span class="text-white font-semibold text-sm"
+                  >{toAmount} {toCrypto?.name ?? toCurrency}</span
+                >
+              </div>
 
-						<a 
-							href="https://changenow.io/exchange/txs/{exchangeId}" 
-							target="_blank"
-							class="flex items-center justify-center gap-2 w-full py-3 bg-black/20 border border-white/10 text-slate-300 font-medium rounded-xl hover:bg-black/40 transition-all"
-						>
-							<ExternalLink size={18} />
-							View on ChangeNOW
-						</a>
-					</div>
-				</div>
+              <div class="flex justify-between items-center gap-2">
+                <span class="text-slate-400 text-sm shrink-0">To Address</span>
+                <span class="text-white font-mono text-xs md:text-sm truncate"
+                  >{(customAddress
+                    ? recipientAddress
+                    : toCrypto?.address || ""
+                  ).slice(0, 8)}...{(customAddress
+                    ? recipientAddress
+                    : toCrypto?.address || ""
+                  ).slice(-6)}</span
+                >
+              </div>
+            </div>
 
-				<!-- Info Box -->
-				<div class="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
-					<p class="text-cyan-200 text-sm text-center">
-						💡 Exchanges typically take 5-30 minutes depending on network congestion
-					</p>
-				</div>
-			</div>
-		{/if}
-	</div>
-	</div>
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+              {#if status === "finished"}
+                <button
+                  class="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all shadow-lg shadow-green-500/25"
+                  on:click={() => goto("/wallet")}
+                >
+                  ✅ View Wallet
+                </button>
+              {:else if status === "failed"}
+                <button
+                  class="w-full py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold rounded-xl hover:from-red-500 hover:to-rose-500 transition-all shadow-lg shadow-red-500/25"
+                  on:click={backToForm}
+                >
+                  ❌ Try Again
+                </button>
+              {:else}
+                <button
+                  class="w-full py-4 bg-stone-800 border border-white/10 text-white font-medium rounded-xl hover:bg-stone-700 transition-all"
+                  on:click={handleStress}
+                >
+                  😰 Click if stressed
+                </button>
+              {/if}
+
+              <a
+                href="https://changenow.io/exchange/txs/{exchangeId}"
+                target="_blank"
+                class="flex items-center justify-center gap-2 w-full py-3 bg-black/20 border border-white/10 text-slate-300 font-medium rounded-xl hover:bg-black/40 transition-all"
+              >
+                <ExternalLink size={18} />
+                View on ChangeNOW
+              </a>
+            </div>
+          </div>
+
+          <!-- Info Box -->
+          <div
+            class="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl"
+          >
+            <p class="text-cyan-200 text-sm text-center">
+              💡 Exchanges typically take 5-30 minutes depending on network
+              congestion
+            </p>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
 </div>
 
 <!-- Cat Modal (ported from old version stress handler) -->
 {#if showCatModal}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" on:click={closeCatModal}>
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<div class="bg-stone-900 border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl" on:click|stopPropagation>
-			<button class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl" on:click={closeCatModal}>×</button>
-			<h2 class="text-2xl font-bold text-white text-center mb-2">Take a deep breath 🐱</h2>
-			<p class="text-slate-300 text-center mb-4">{catMessage}</p>
-			<img src={catImageUrl} alt="Calming cat" class="w-full rounded-xl mb-4 max-h-64 object-cover" />
-			<button 
-				class="w-full py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all"
-				on:click={closeCatModal}
-			>
-				I feel better now
-			</button>
-		</div>
-	</div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50"
+    on:click={closeCatModal}
+  >
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="bg-stone-900 border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+      on:click|stopPropagation
+    >
+      <button
+        class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl"
+        on:click={closeCatModal}>×</button
+      >
+      <h2 class="text-2xl font-bold text-white text-center mb-2">
+        Take a deep breath 🐱
+      </h2>
+      <p class="text-slate-300 text-center mb-4">{catMessage}</p>
+      <img
+        src={catImageUrl}
+        alt="Calming cat"
+        class="w-full rounded-xl mb-4 max-h-64 object-cover"
+      />
+      <button
+        class="w-full py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-bold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition-all"
+        on:click={closeCatModal}
+      >
+        I feel better now
+      </button>
+    </div>
+  </div>
 {/if}
 
 <!-- Mobile Bottom Nav -->
-<div class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50">
-	<div class="grid grid-cols-4 p-2">
-		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/wallet')}>
-			<Wallet size={24} /><span class="text-xs">Wallet</span>
-		</button>
-		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/portfolio')}>
-			<TrendingUp size={24} /><span class="text-xs">Portfolio</span>
-		</button>
-		<button class="flex flex-col items-center gap-1 py-3 text-cyan-400">
-			<RefreshCw size={24} /><span class="text-xs font-medium">Swap</span>
-		</button>
-		<button class="flex flex-col items-center gap-1 py-3 text-slate-500" on:click={() => goto('/settings')}>
-			<Settings size={24} /><span class="text-xs">Settings</span>
-		</button>
-	</div>
+<div
+  class="fixed bottom-0 left-0 right-0 bg-stone-900/95 backdrop-blur-xl border-t border-white/10 md:hidden z-50"
+>
+  <div class="grid grid-cols-4 p-2">
+    <button
+      class="flex flex-col items-center gap-1 py-3 text-slate-500"
+      on:click={() => goto("/wallet")}
+    >
+      <Wallet size={24} /><span class="text-xs">Wallet</span>
+    </button>
+    <button
+      class="flex flex-col items-center gap-1 py-3 text-slate-500"
+      on:click={() => goto("/portfolio")}
+    >
+      <TrendingUp size={24} /><span class="text-xs">Portfolio</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 py-3 text-cyan-400">
+      <RefreshCw size={24} /><span class="text-xs font-medium">Swap</span>
+    </button>
+    <button
+      class="flex flex-col items-center gap-1 py-3 text-slate-500"
+      on:click={() => goto("/settings")}
+    >
+      <Settings size={24} /><span class="text-xs">Settings</span>
+    </button>
+  </div>
 </div>

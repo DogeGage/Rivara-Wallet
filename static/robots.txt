@@ -1,10 +1,6 @@
 # Rivara Wallet - Robots.txt
 User-agent: *
 Allow: /
-Disallow: /create
-Disallow: /import
-Disallow: /unlock
-Disallow: /settings
 
 # Sitemap
 Sitemap: https://rivarawallet.xyz/sitemap.xml
