@@ -143,7 +143,7 @@
     <!-- Too lazy to add proper padding, Oh well it works -->
     <div class="max-w-4xl mx-auto text-center">
       <div class="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-medium text-sm mb-8 tracking-wide">
-        v6.2.0 — "The Pineapple Protocol" Update
+        v7.0.0 — "Sentinel" Security Update
       </div>
       <h1
         class="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight"

@@ -7,6 +7,7 @@
   import { goto } from "$app/navigation";
   import { ArrowLeft } from "lucide-svelte";
   import { walletService } from "$lib/services/wallet-service";
+  import { secureKeyManager } from "$lib/services/secure-key-manager";
   import { tuffbackupService } from "$lib/services/tuffbackup-service";
 
   // SECURITY FIX 2: Password strength validation
@@ -142,8 +143,10 @@
 
       // Then import and derive addresses
       await walletService.importFromSeed(seedPhrase.trim());
-      // SECURITY: Store password for on-demand key derivation
-      sessionStorage.setItem("_walletSessionPw", password);
+      // Derive key inside SW — wallet is unlocked without storing password anywhere
+      const encryptedImport = localStorage.getItem("encryptedWallet")!;
+      const importData = Uint8Array.from(atob(encryptedImport), c => c.charCodeAt(0));
+      await secureKeyManager.deriveAndStoreKey(password, importData.slice(0, 16));
       localStorage.setItem("isWalletAlive", "true");
       goto("/wallet");
     } catch (err: any) {

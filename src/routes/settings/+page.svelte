@@ -402,7 +402,11 @@
       }
       const seed = await encryptionService.decrypt(encrypted, currentPassword);
       await encryptionService.saveWallet(seed, newPassword);
-      sessionStorage.setItem("_walletSessionPw", newPassword);
+      // Re-derive key in SW under new password so session stays unlocked
+      const reEncrypted = localStorage.getItem("encryptedWallet")!;
+      const reData = Uint8Array.from(atob(reEncrypted), c => c.charCodeAt(0));
+      const { secureKeyManager } = await import("$lib/services/secure-key-manager");
+      await secureKeyManager.deriveAndStoreKey(newPassword, reData.slice(0, 16));
       success = "Password changed successfully";
       showChangePasswordModal = false;
       currentPassword = "";

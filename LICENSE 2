@@ -1,0 +1,38 @@
+DogeGage Wallet - Source Available License
+
+Copyright (c) 2024-2026 DogeGage
+
+This code is made available for TRANSPARENCY AND PERSONAL USE.
+
+You MAY:
+- View, read, and audit the source code
+- Download and run the wallet locally for personal use
+- Fork and modify the code for your own personal use
+- Change logos, icons, and visual branding for personal experimentation
+- Contribute improvements back via pull requests
+- Learn from the code
+- Share with friends for educational purposes (not public distribution)
+
+You MAY NOT:
+- Use this code for ANY commercial purpose
+- Host this wallet (or any modified version) as a public service
+- Publicly redistribute this code (point people to the official repo instead)
+- Use this code to create a competing product or service
+- Remove or modify the DogeGage copyright headers/watermarks in source files
+- Claim this code as your own work
+
+Basically: Use it yourself, don't host your own clone.
+
+NOTE: The API worker (worker.js) is not included in this repository because we're too lazy to move the API keys to environment variables. The worker just handles exchange functionality, balance checking, and price fetching - nothing sensitive. The wallet frontend is fully source available.
+
+This is SOURCE AVAILABLE software - the code is public for transparency and security auditing, but commercial and redistribution rights are reserved by DogeGage.
+
+ENFORCEMENT:
+Violations of this license will result in:
+- Permanent blacklisting from DogeGage services
+- DMCA takedown requests to hosting providers and GitHub
+- Legal action and pursuit of damages
+
+We actively monitor for unauthorized hosted copies and WILL pursue violators.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

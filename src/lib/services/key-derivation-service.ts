@@ -5,8 +5,8 @@
  */
 /**
  * SECURITY: On-demand key derivation service
- * Retrieves the mnemonic from encrypted storage, derives the needed private key,
- * and clears it from memory immediately after use.
+ * Retrieves the mnemonic from encrypted storage via Service Worker,
+ * derives the needed private key, and clears it from memory immediately after use.
  *
  * This replaces reading wallet.mnemonic or wallet[chain].privateKey from the store.
  */
@@ -14,17 +14,12 @@
 import { encryptionService } from "./encryption-service";
 
 /**
- * Prompts for the wallet password and returns the decrypted mnemonic.
+ * Get the decrypted mnemonic using the key stored in Service Worker.
  * The caller MUST clear the mnemonic reference when done.
  */
 export async function getMnemonicForSigning(): Promise<string> {
-  // Retrieve password from sessionStorage (set during unlock)
-  const sessionPw = sessionStorage.getItem("_walletSessionPw");
-  if (!sessionPw) {
-    throw new Error("Wallet session expired. Please unlock your wallet again.");
-  }
-
-  const mnemonic = await encryptionService.loadWallet(sessionPw);
+  // SECURITY FIX: Use Service Worker to decrypt, no password in sessionStorage
+  const mnemonic = await encryptionService.loadWalletFromStoredKey();
   return mnemonic;
 }
 

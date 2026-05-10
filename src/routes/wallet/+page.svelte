@@ -422,14 +422,8 @@
       const encryptedWallet = localStorage.getItem("encryptedWallet");
       if (!encryptedWallet) throw new Error("Wallet not found");
 
-      const sessionPw = sessionStorage.getItem("_walletSessionPw");
-      if (!sessionPw)
-        throw new Error("Session expired. Please lock and unlock your wallet.");
-
-      const mnemonic = await encryptionService.decrypt(
-        encryptedWallet,
-        sessionPw,
-      );
+      // SECURITY FIX: Use Service Worker to decrypt (no password in sessionStorage)
+      const mnemonic = await encryptionService.loadWalletFromStoredKey();
 
       // Ensure amount is a string
       const amountStr = String(sendAmount);

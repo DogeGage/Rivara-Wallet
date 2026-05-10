@@ -7,6 +7,7 @@
   import { goto } from "$app/navigation";
   import { ArrowLeft, Copy, Check } from "lucide-svelte";
   import { walletService } from "$lib/services/wallet-service";
+  import { secureKeyManager } from "$lib/services/secure-key-manager";
   import { onMount } from "svelte";
 
   // Inline encryption functions
@@ -27,7 +28,7 @@
       {
         name: "PBKDF2",
         salt: salt as BufferSource,
-        iterations: 100000,
+        iterations: 600_000,
         hash: "SHA-256",
       },
       importedKey,
@@ -195,9 +196,11 @@
     try {
       await walletService.importFromSeed(generatedMnemonic);
       await saveWallet(generatedMnemonic, password);
+      // Derive key inside SW so wallet is immediately unlocked without storing password
+      const encrypted = localStorage.getItem("encryptedWallet")!;
+      const data = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
+      await secureKeyManager.deriveAndStoreKey(password, data.slice(0, 16));
       sessionStorage.setItem("walletUnlocked", "true");
-      // SECURITY: Store password for on-demand key derivation
-      sessionStorage.setItem("_walletSessionPw", password);
       localStorage.setItem("isWalletAlive", "true");
       goto("/wallet");
     } catch (err: any) {
@@ -231,9 +234,10 @@
     try {
       await walletService.importFromSeed(generatedMnemonic);
       await saveWallet(generatedMnemonic, password);
+      const encrypted2 = localStorage.getItem("encryptedWallet")!;
+      const data2 = Uint8Array.from(atob(encrypted2), c => c.charCodeAt(0));
+      await secureKeyManager.deriveAndStoreKey(password, data2.slice(0, 16));
       sessionStorage.setItem("walletUnlocked", "true");
-      // SECURITY: Store password for on-demand key derivation
-      sessionStorage.setItem("_walletSessionPw", password);
       localStorage.setItem("isWalletAlive", "true");
       goto("/wallet");
     } catch (err: any) {

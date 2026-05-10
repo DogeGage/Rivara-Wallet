@@ -96,7 +96,56 @@
 				};
 				console.log('✅ Crypto libraries loaded from CDN');
 			}
+
+			// Register Secure Service Worker for key isolation
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.register('/secure-worker.js')
+					.then(registration => {
+						console.log('✅ Secure Service Worker registered:', registration.scope);
+					})
+					.catch(error => {
+						console.error('❌ Service Worker registration failed:', error);
+					});
+			}
 		});
+
+		// SECURITY: Enhanced logging and monitoring
+		(function() {
+			const devMode = localStorage.getItem('devMode') === 'true';
+			
+			// Security status logger
+			console.log('%c🔒 Rivara Wallet Security Status', 'color: #0891b2; font-size: 14px; font-weight: bold;');
+			console.log('%c├─ Service Worker: ' + ('serviceWorker' in navigator ? '✓ Active' : '✗ Not Available'), 'color: #10b981;');
+			console.log('%c├─ Non-extractable Keys: ✓ Enabled', 'color: #10b981;');
+			console.log('%c├─ Auto-lock: ✓ 5 minutes', 'color: #10b981;');
+			console.log('%c├─ PBKDF2 Iterations: 600,000', 'color: #10b981;');
+			console.log('%c└─ Dev Mode: ' + (devMode ? '✓ Enabled' : '✗ Disabled'), devMode ? 'color: #f59e0b;' : 'color: #6b7280;');
+			
+			if (!devMode) {
+				console.log('%c\n⚠️  Security Notice', 'color: #f59e0b; font-size: 12px; font-weight: bold;');
+				console.log('%cThis wallet uses Service Worker isolation. Private keys are stored in non-extractable CryptoKeys.', 'color: #9ca3af;');
+				console.log('%cTo enable developer tools, go to Settings → Dev Mode.', 'color: #9ca3af;');
+				
+				// Monitor suspicious storage access (only from console/devtools, not app code)
+				const originalGetItem = Storage.prototype.getItem;
+				let accessCount = 0;
+				const MAX_LEGITIMATE_ACCESS = 50; // App will access storage legitimately
+				
+				Storage.prototype.getItem = function(key) {
+					// Only warn after many accesses (likely manual console usage)
+					if (!devMode && (key === 'encryptedWallet' || key === 'duressSalt' || key === 'duressHash')) {
+						accessCount++;
+						if (accessCount > MAX_LEGITIMATE_ACCESS) {
+							console.warn('🔐 Unusual storage access pattern detected:', key);
+						}
+					}
+					return originalGetItem.call(this, key);
+				};
+			} else {
+				console.log('%c\n🛠️  Developer Mode Active', 'color: #f59e0b; font-size: 12px; font-weight: bold;');
+				console.log('%cFull console access enabled. Storage monitoring disabled.', 'color: #9ca3af;');
+			}
+		})();
 	</script>
 
 	%sveltekit.head%

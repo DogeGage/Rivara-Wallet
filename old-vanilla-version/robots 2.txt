@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /src/
-Disallow: /#/wallet
-Disallow: /#/settings
-Disallow: /#/unlock
-
-Sitemap: https://wallet.dogegage.xyz/sitemap.xml

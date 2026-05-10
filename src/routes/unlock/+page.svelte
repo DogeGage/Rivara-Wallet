@@ -9,75 +9,7 @@
   import { ArrowLeft } from "lucide-svelte";
   import { wallet, isUnlocked, isCurrentUnlock } from "$lib/stores/wallet";
   import { walletService } from "$lib/services/wallet-service";
-
-  // Inline encryption functions
-  async function deriveKey(
-    password: string,
-    salt: Uint8Array,
-  ): Promise<CryptoKey> {
-    const encoder = new TextEncoder();
-    const passwordBuffer = encoder.encode(password);
-    const importedKey = await crypto.subtle.importKey(
-      "raw",
-      passwordBuffer,
-      { name: "PBKDF2" },
-      false,
-      ["deriveBits", "deriveKey"],
-    );
-    return await crypto.subtle.deriveKey(
-      {
-        name: "PBKDF2",
-        salt: salt as BufferSource,
-        iterations: 100000,
-        hash: "SHA-256",
-      },
-      importedKey,
-      { name: "AES-GCM", length: 256 },
-      false,
-      ["encrypt", "decrypt"],
-    );
-  }
-
-  async function decryptSeed(
-    encryptedData: string,
-    password: string,
-  ): Promise<string> {
-    const data = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
-    const salt = data.slice(0, 16);
-    const iv = data.slice(16, 28);
-    const encrypted = data.slice(28);
-    const key = await deriveKey(password, salt);
-    const decryptedData = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: iv },
-      key,
-      encrypted,
-    );
-    const decoder = new TextDecoder();
-    return decoder.decode(decryptedData);
-  }
-
-  async function loadWallet(password: string): Promise<string> {
-    const encrypted = localStorage.getItem("encryptedWallet");
-    if (!encrypted) throw new Error("No wallet found in storage");
-
-    // Check duress password first (stored encrypted in localStorage)
-    const encryptedDuress = localStorage.getItem("encryptedDuressPassword");
-    if (encryptedDuress) {
-      try {
-        const duressPlain = atob(encryptedDuress);
-        if (password === duressPlain) {
-          // Flag session as duress mode
-          sessionStorage.setItem("_isDuressMode", "true");
-          // Duress password matched - return fake seed
-          return "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-        }
-      } catch {}
-    }
-
-    // Normal mode - clear duress flag
-    sessionStorage.removeItem("_isDuressMode");
-    return await decryptSeed(encrypted, password);
-  }
+  import { encryptionService } from "$lib/services/encryption-service";
 
   function hasStoredWallet(): boolean {
     return localStorage.getItem("encryptedWallet") !== null;
@@ -166,15 +98,16 @@
     loading = true;
 
     try {
-      const seedPhrase = await loadWallet(password);
+      console.log('🔓 Attempting unlock...');
+      const seedPhrase = await encryptionService.loadWallet(password);
+      console.log('✅ Wallet decrypted successfully');
+      
       await walletService.importFromSeed(seedPhrase);
+      console.log('✅ Wallet imported');
+      
       wallet.set(walletService.getWallet());
       isUnlocked.set(true);
       sessionStorage.setItem("walletUnlocked", "true");
-
-      // SECURITY: Store password in sessionStorage for on-demand key derivation
-      // This is scoped to the tab and cleared on close/lock
-      sessionStorage.setItem("_walletSessionPw", password);
 
       // Reset rate limiting on success
       failedAttempts = 0;
@@ -186,6 +119,7 @@
       goto("/wallet");
       walletService.fetchBalances().catch(() => {});
     } catch (err: any) {
+      console.error('❌ Unlock failed:', err);
       failedAttempts++;
       sessionStorage.setItem("failedUnlockAttempts", failedAttempts.toString());
 

@@ -25,7 +25,7 @@ async function deriveHmacKey(password: string): Promise<CryptoKey> {
 
   const salt = encoder.encode("tuffbackup-hmac-salt-v1");
   return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    { name: "PBKDF2", salt, iterations: 600_000, hash: "SHA-256" },
     keyMaterial,
     { name: "HMAC", hash: "SHA-256", length: 256 },
     false,
