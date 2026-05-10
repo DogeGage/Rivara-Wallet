@@ -10,7 +10,9 @@ export type CryptoChain =
   | "litecoin"
   | "solana"
   | "tron"
-  | "polygon";
+  | "polygon"
+  | "avalanche"
+  | "bsc";
 
 export interface SendTransaction {
   from: string;

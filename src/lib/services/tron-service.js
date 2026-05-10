@@ -2,7 +2,7 @@
  * Rivara Wallet
  * Copyright (c) 2024-2026 Rivara
  * Source Available License - See LICENSE file
- * https://github.com/dominic84p/Rivara-Wallet
+ * https://github.com/dogegage/rivara-wallet
  */
 
 import { priceService } from './price-service';

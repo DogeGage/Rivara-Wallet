@@ -130,7 +130,7 @@
         <p>
           Rivara Wallet is open source. You can verify everything we've stated
           above by reviewing the <a
-            href="https://github.com/dominic84p/Rivara-Wallet"
+            href="https://github.com/dogegage/rivara-wallet"
             target="_blank"
             rel="noopener"
             class="text-cyan-400 hover:text-cyan-300 underline underline-offset-2"
@@ -143,7 +143,7 @@
         <h2>Contact</h2>
         <p>
           Questions about this policy? Open an issue on our <a
-            href="https://github.com/dominic84p/Rivara-Wallet/issues"
+            href="https://github.com/dogegage/rivara-wallet/issues"
             target="_blank"
             rel="noopener"
             class="text-cyan-400 hover:text-cyan-300 underline underline-offset-2"

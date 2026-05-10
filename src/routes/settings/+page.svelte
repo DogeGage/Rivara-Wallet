@@ -1162,7 +1162,7 @@
               </div>
               <div class="item-actions">
                 <a
-                  href="https://github.com/dominic84p/Rivara-Wallet"
+                  href="https://github.com/dogegage/rivara-wallet"
                   target="_blank"
                   rel="noopener"
                   class="btn-secondary">GitHub ↗</a
@@ -1185,7 +1185,7 @@
                 {:else if versionInfo?.engine}
                   <span>{versionInfo.engine}</span>
                 {:else}
-                  <span>Phantom v6.2.0 - The Pineapple Protocol</span>
+                  <span>Rivara Sentinel v7.0.2 - Bug fix one</span>
                 {/if}
               </div>
               {#if !loadingVersion && !versionInfo}
@@ -1213,7 +1213,13 @@
             <div class="settings-item">
               <div class="item-info">
                 <strong>Release Date</strong>
-                <span>March 15, 2026</span>
+                {#if loadingVersion}
+                  <span class="text-slate-500">Loading...</span>
+                {:else if versionInfo?.releaseDate}
+                  <span>{versionInfo.releaseDate}</span>
+                {:else}
+                  <span>May 9th, 2026</span>
+                {/if}
               </div>
             </div>
             <div class="settings-item">
@@ -1223,7 +1229,7 @@
               </div>
               <div class="item-actions">
                 <a
-                  href="https://github.com/dominic84p/Rivara-Wallet/blob/main/LICENSE"
+                  href="https://github.com/dogegage/rivara-wallet/blob/main/LICENSE"
                   target="_blank"
                   rel="noopener"
                   class="btn-secondary">View ↗</a
@@ -1237,7 +1243,7 @@
               </div>
               <div class="item-actions">
                 <a
-                  href="https://github.com/dominic84p/Rivara-Wallet"
+                  href="https://github.com/dogegage/rivara-wallet"
                   target="_blank"
                   rel="noopener"
                   class="btn-secondary">Open ↗</a
@@ -1255,7 +1261,7 @@
               </div>
               <div class="item-actions">
                 <a
-                  href="https://github.com/dominic84p/Rivara-Wallet#readme"
+                  href="https://github.com/dogegage/rivara-wallet#readme"
                   target="_blank"
                   rel="noopener"
                   class="btn-secondary">Read ↗</a
@@ -1269,7 +1275,7 @@
               </div>
               <div class="item-actions">
                 <a
-                  href="https://github.com/dominic84p/Rivara-Wallet/issues"
+                  href="https://github.com/dogegage/rivara-wallet/issues"
                   target="_blank"
                   rel="noopener"
                   class="btn-secondary">Report ↗</a

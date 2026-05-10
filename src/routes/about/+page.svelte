@@ -4,6 +4,7 @@
   Licensed under DogeGage Source Available License
 -->
 <script lang="ts">
+  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import Navbar from "$lib/components/ui/Navbar.svelte";
   import Button from "$lib/components/ui/Button.svelte";
@@ -21,6 +22,24 @@
     Network,
     XCircle,
   } from "lucide-svelte";
+
+  let engineVersion = "Rivara Sentinel v7.0.2 - Bug fix one";
+  let releaseDate = "May 9th, 2026";
+
+  onMount(async () => {
+    try {
+      const response = await fetch("https://api.rivarawallet.xyz/");
+      const data = await response.json();
+      if (data.engine) {
+        engineVersion = data.engine;
+      }
+      if (data.releaseDate) {
+        releaseDate = data.releaseDate;
+      }
+    } catch (error) {
+      console.error("Failed to fetch version info:", error);
+    }
+  });
 
   const features = [
     {
@@ -143,7 +162,7 @@
     <!-- Too lazy to add proper padding, Oh well it works -->
     <div class="max-w-4xl mx-auto text-center">
       <div class="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-medium text-sm mb-8 tracking-wide">
-        v7.0.0 — "Sentinel" Security Update
+        {engineVersion} — Released {releaseDate}
       </div>
       <h1
         class="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight"

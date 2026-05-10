@@ -320,6 +320,8 @@ export function getExplorerUrl(chain: CryptoChain, txHash: string): string {
     solana: `https://explorer.solana.com/tx/${txHash}`,
     tron: `https://tronscan.org/#/transaction/${txHash}`,
     polygon: `https://polygonscan.com/tx/${txHash}`,
+    avalanche: `https://snowtrace.io/tx/${txHash}`,
+    bsc: `https://bscscan.com/tx/${txHash}`,
   };
 
   return explorers[chain];
