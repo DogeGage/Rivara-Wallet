@@ -6,549 +6,307 @@
 <script lang="ts">
   import { afterNavigate, goto } from "$app/navigation";
   import {
-    Newspaper,
     BookOpen,
     HelpCircle,
     Info,
-    CheckCircle,
-    Lock,
-    Zap,
-    Target,
-    Database,
-    ShieldOff,
     Github,
     FileText,
     Shield,
     Menu,
     X,
-    Activity,
+    Clock,
   } from "lucide-svelte";
   import { browser } from "$app/environment";
 
   let mobileMenuOpen = false;
 
-  let hasWallet = browser
-    ? localStorage.getItem("isWalletAlive") === "true"
-    : false;
-  let isUnlocked = browser
-    ? sessionStorage.getItem("walletUnlocked") === "true"
-    : false;
+  let hasWallet  = browser ? localStorage.getItem("isWalletAlive") === "true" : false;
+  let isUnlocked = browser ? sessionStorage.getItem("walletUnlocked") === "true" : false;
 
   afterNavigate(() => {
-    hasWallet = localStorage.getItem("isWalletAlive") === "true";
+    hasWallet  = localStorage.getItem("isWalletAlive") === "true";
     isUnlocked = sessionStorage.getItem("walletUnlocked") === "true";
   });
 
   const features = [
-    {
-      icon: CheckCircle,
-      title: "Actually Works",
-      desc: 'Every feature tested. No "coming soon" BS. Send, receive, exchange - all functional.',
-    },
-    {
-      icon: Lock,
-      title: "Your Keys, Your Crypto",
-      desc: "Standard BIP39 seed phrases. Works with any wallet. No proprietary lock-in.",
-    },
-    {
-      icon: Zap,
-      title: "Built-In Exchange",
-      desc: "Swap crypto without leaving the wallet. Powered by ChangeNow.",
-    },
-    {
-      icon: Target,
-      title: "Clean & Simple",
-      desc: "No bloat. No confusing menus. Just your crypto and what you need.",
-    },
-    {
-      icon: Database,
-      title: "Tuffbackup System",
-      desc: "Encrypted wallet backups. One file, all your crypto. Actually secure.",
-    },
-    {
-      icon: ShieldOff,
-      title: "No Telemetry",
-      desc: "Zero tracking. Zero analytics. Zero data collection. Period.",
-    },
+    { title: "Your keys, for real",         desc: "Standard BIP39. Import to any other wallet whenever. No lock-in." },
+    { title: "Everything actually works",   desc: "Send, receive, swap — all of it. Not \"coming soon\". Working." },
+    { title: "Built-in swaps",              desc: "Swap between chains without leaving the app. Powered by ChangeNow." },
+    { title: "Zero tracking",               desc: "No analytics, no telemetry. I don't know who uses this." },
+    { title: "Tuffbackup",                  desc: "One encrypted file. Download it, keep it safe, restore anytime." },
+    { title: "Duress mode",                 desc: "A second password that opens a convincing decoy wallet." },
   ];
 </script>
 
 <div class="landing-page">
   <!-- Background -->
   <div class="fixed inset-0 -z-10" style="clip-path: inset(0)">
-    <div
-      class="absolute inset-0"
-      style="background: radial-gradient(ellipse at top, rgba(8,145,178,0.18) 0%, #070b10 60%)"
-    ></div>
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at 65% 0%, rgba(120,80,20,0.11) 0%, rgba(80,40,120,0.07) 45%, #070b10 68%)"></div>
     <div class="shape shape-1"></div>
     <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
   </div>
 
   <!-- Navigation -->
-  <nav
-    class="fixed top-0 left-0 right-0 z-50 bg-stone-900/90 backdrop-blur-lg border-b border-white/10"
-  >
-    <div class="max-w-7xl mx-auto px-4 md:px-8 py-4">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <span class="text-3xl">⬢</span>
-          <span class="text-xl font-semibold text-white">Rivara Wallet</span>
-          <span
-            class="px-2 py-0.5 bg-cyan-600 text-white text-xs font-bold rounded ml-1"
-            >BETA</span
-          >
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-[#070b10]/95 backdrop-blur-lg border-b border-white/[0.08]">
+    <div class="max-w-6xl mx-auto px-5 md:px-8 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <span class="text-2xl leading-none">⬢</span>
+          <span class="text-[15px] font-semibold text-white tracking-tight">Rivara</span>
         </div>
-
-        <div class="hidden md:flex gap-6 items-center">
-          <button
-            class="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition"
-            on:click={() => goto("/news")}
-          >
-            <Newspaper size={18} />
-            News
-          </button>
-          <button
-            class="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition"
-            on:click={() => goto("/docs")}
-          >
-            <BookOpen size={18} />
-            Docs
-          </button>
-          <button
-            class="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition"
-            on:click={() => goto("/support")}
-          >
-            <HelpCircle size={18} />
-            Support
-          </button>
-          <button
-            class="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition"
-            on:click={() => goto("/about")}
-          >
-            <Info size={18} />
-            About
-          </button>
-        </div>
-
-        <div class="hidden md:flex gap-3">
-          {#if isUnlocked}
-            <button
-              class="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-              on:click={() => goto("/wallet")}
-            >
-              Open Wallet
-            </button>
-          {:else if hasWallet}
-            <button
-              class="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-              on:click={() => goto("/unlock")}
-            >
-              Unlock Wallet
-            </button>
-          {:else}
-            <button
-              class="px-6 py-3 border-2 border-cyan-500 text-cyan-400 font-semibold rounded-xl hover:bg-cyan-500/10 transition"
-              on:click={() => goto("/import")}
-            >
-              Import Wallet
-            </button>
-            <button
-              class="px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-              on:click={() => goto("/create")}
-            >
-              Create Wallet
-            </button>
-          {/if}
-        </div>
-
-        <!-- Mobile hamburger -->
-        <button
-          class="md:hidden p-2 text-white"
-          on:click={() => (mobileMenuOpen = !mobileMenuOpen)}
-        >
-          {#if mobileMenuOpen}
-            <X size={24} />
-          {:else}
-            <Menu size={24} />
-          {/if}
-        </button>
+        <span class="px-1.5 py-0.5 bg-amber-600/70 text-white text-[10px] font-bold rounded tracking-wide">BETA</span>
       </div>
 
-      <!-- Mobile Menu -->
-      {#if mobileMenuOpen}
-        <div
-          class="md:hidden mt-4 pb-4 border-t border-white/10 pt-4 flex flex-col gap-2"
-        >
-          <button
-            class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition"
-            on:click={() => {
-              goto("/news");
-              mobileMenuOpen = false;
-            }}
-          >
-            <Newspaper size={18} />
-            News
-          </button>
-          <button
-            class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition"
-            on:click={() => {
-              goto("/docs");
-              mobileMenuOpen = false;
-            }}
-          >
-            <BookOpen size={18} />
-            Docs
-          </button>
-          <button
-            class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition"
-            on:click={() => {
-              goto("/support");
-              mobileMenuOpen = false;
-            }}
-          >
-            <HelpCircle size={18} />
-            Support
-          </button>
-          <button
-            class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition"
-            on:click={() => {
-              goto("/about");
-              mobileMenuOpen = false;
-            }}
-          >
-            <Info size={18} />
-            About
-          </button>
-          <div class="border-t border-white/10 mt-2 pt-4 flex flex-col gap-2">
-            {#if isUnlocked}
-              <button
-                class="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-                on:click={() => {
-                  goto("/wallet");
-                  mobileMenuOpen = false;
-                }}
-              >
-                Open Wallet
-              </button>
-            {:else if hasWallet}
-              <button
-                class="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-                on:click={() => {
-                  goto("/unlock");
-                  mobileMenuOpen = false;
-                }}
-              >
-                Unlock Wallet
-              </button>
-            {:else}
-              <button
-                class="w-full px-6 py-3 border-2 border-cyan-500 text-cyan-400 font-semibold rounded-xl hover:bg-cyan-500/10 transition"
-                on:click={() => {
-                  goto("/import");
-                  mobileMenuOpen = false;
-                }}
-              >
-                Import Wallet
-              </button>
-              <button
-                class="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-                on:click={() => {
-                  goto("/create");
-                  mobileMenuOpen = false;
-                }}
-              >
-                Create Wallet
-              </button>
-            {/if}
-          </div>
-        </div>
-      {/if}
+      <div class="hidden md:flex items-center gap-1">
+        <button class="nav-link" on:click={() => goto("/changelog")}><Clock size={14}/> Changelog</button>
+        <button class="nav-link" on:click={() => goto("/docs")}><BookOpen size={14}/> Docs</button>
+        <button class="nav-link" on:click={() => goto("/support")}><HelpCircle size={14}/> Support</button>
+        <button class="nav-link" on:click={() => goto("/about")}><Info size={14}/> About</button>
+      </div>
+
+      <div class="hidden md:flex items-center gap-2">
+        {#if isUnlocked}
+          <button class="cta-primary" on:click={() => goto("/wallet")}>Open Wallet</button>
+        {:else if hasWallet}
+          <button class="cta-primary" on:click={() => goto("/unlock")}>Unlock Wallet</button>
+        {:else}
+          <button class="cta-ghost" on:click={() => goto("/import")}>Import</button>
+          <button class="cta-primary" on:click={() => goto("/create")}>Get started</button>
+        {/if}
+      </div>
+
+      <button class="md:hidden p-1.5 text-slate-400" on:click={() => (mobileMenuOpen = !mobileMenuOpen)}>
+        {#if mobileMenuOpen}<X size={20}/>{:else}<Menu size={20}/>{/if}
+      </button>
     </div>
+
+    {#if mobileMenuOpen}
+      <div class="md:hidden border-t border-white/[0.08] bg-[#070b10] px-5 py-3 flex flex-col gap-1">
+        <button class="mobile-nav-item" on:click={() => { goto("/changelog"); mobileMenuOpen = false; }}><Clock size={14}/> Changelog</button>
+        <button class="mobile-nav-item" on:click={() => { goto("/docs"); mobileMenuOpen = false; }}><BookOpen size={14}/> Docs</button>
+        <button class="mobile-nav-item" on:click={() => { goto("/support"); mobileMenuOpen = false; }}><HelpCircle size={14}/> Support</button>
+        <button class="mobile-nav-item" on:click={() => { goto("/about"); mobileMenuOpen = false; }}><Info size={14}/> About</button>
+        <div class="border-t border-white/[0.08] mt-2 pt-2 flex flex-col gap-2">
+          {#if isUnlocked}
+            <button class="cta-primary w-full" on:click={() => { goto("/wallet"); mobileMenuOpen = false; }}>Open Wallet</button>
+          {:else if hasWallet}
+            <button class="cta-primary w-full" on:click={() => { goto("/unlock"); mobileMenuOpen = false; }}>Unlock Wallet</button>
+          {:else}
+            <button class="cta-ghost w-full" on:click={() => { goto("/import"); mobileMenuOpen = false; }}>Import Existing</button>
+            <button class="cta-primary w-full" on:click={() => { goto("/create"); mobileMenuOpen = false; }}>Get Started</button>
+          {/if}
+        </div>
+      </div>
+    {/if}
   </nav>
 
-  <!-- Hero Section -->
-  <section class="pt-36 pb-20 px-4 md:px-8">
-    <div
-      class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center"
-    >
-      <div class="text-left">
-        <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-6">
-          A Wallet That <span
-            class="bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent"
-            >Actually Works</span
-          >
+  <!-- Hero -->
+  <section class="pt-28 pb-10 px-5 md:px-8">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+      <div>
+        <h1 class="text-[2.6rem] md:text-6xl font-bold leading-[1.1] tracking-tight mb-5 text-white">
+          A crypto wallet<br/>that doesn't <span class="text-amber-400">suck.</span>
         </h1>
-        <p class="text-lg md:text-xl text-slate-400 mb-8 leading-relaxed">
-          Tired of bloated wallets with broken features? Rivara does 8 cryptos
-          really well instead of 40 poorly.
+        <p class="text-slate-400 text-[15px] leading-relaxed mb-6 max-w-md">
+          Most wallets support 40 chains and half are broken. Rivara does 8 chains and all of them work.
+          Standard BIP39 seeds. Built-in exchange. No accounts, no tracking, no cloud.
         </p>
 
-        <div class="flex flex-col sm:flex-row gap-4 mb-12">
+        <div class="flex flex-wrap gap-2.5 mb-8">
           {#if isUnlocked}
-            <button
-              class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-              on:click={() => goto("/wallet")}
-            >
-              Open Wallet →
-            </button>
+            <button class="cta-primary px-6 py-2.5 text-sm" on:click={() => goto("/wallet")}>Open Wallet →</button>
           {:else if hasWallet}
-            <button
-              class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-              on:click={() => goto("/unlock")}
-            >
-              Unlock Wallet →
-            </button>
+            <button class="cta-primary px-6 py-2.5 text-sm" on:click={() => goto("/unlock")}>Unlock Wallet →</button>
           {:else}
-            <button
-              class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-              on:click={() => goto("/create")}
-            >
-              Create Wallet →
-            </button>
-            <button
-              class="px-8 py-4 text-lg bg-white/5 text-white font-semibold rounded-xl hover:bg-white/10 transition"
-              on:click={() => goto("/import")}
-            >
-              Import Existing
-            </button>
+            <button class="cta-primary px-6 py-2.5 text-sm" on:click={() => goto("/create")}>Create a wallet →</button>
+            <button class="cta-ghost px-6 py-2.5 text-sm" on:click={() => goto("/import")}>Already have a seed phrase</button>
           {/if}
         </div>
-
-        <div class="flex gap-8 md:gap-12">
-          <div class="text-center">
-            <div
-              class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent mb-1"
-            >
-              8
-            </div>
-            <div
-              class="text-xs md:text-sm text-slate-500 uppercase tracking-wider"
-            >
-              Cryptocurrencies
-            </div>
-          </div>
-          <div class="text-center">
-            <div
-              class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent mb-1"
-            >
-              100%
-            </div>
-            <div
-              class="text-xs md:text-sm text-slate-500 uppercase tracking-wider"
-            >
-              Features Working
-            </div>
-          </div>
-          <div class="text-center">
-            <div
-              class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-400 bg-clip-text text-transparent mb-1"
-            >
-              0
-            </div>
-            <div
-              class="text-xs md:text-sm text-slate-500 uppercase tracking-wider"
-            >
-              Tracking/Ads
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div class="flex justify-center">
-        <div class="relative w-full max-w-2xl">
-          <img
-            src="/assets/image/gui.png"
-            alt="Rivara Wallet Interface"
-            class="w-full rounded-3xl shadow-2xl border border-white/10"
-          />
-        </div>
+      <div class="relative">
+        <div class="absolute -inset-3 bg-amber-500/5 rounded-2xl blur-2xl pointer-events-none"></div>
+        <img src="/assets/image/gui.png" alt="Rivara Wallet UI" class="relative w-full rounded-xl shadow-2xl border border-white/[0.08]"/>
       </div>
     </div>
   </section>
 
-  <!-- Features -->
-  <section class="py-20 px-4 md:px-8">
-    <div class="max-w-6xl mx-auto">
-      <h2 class="text-3xl md:text-5xl font-bold text-center mb-16">
-        Why Rivara?
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {#each features as feature}
-          <div
-            class="p-8 rounded-2xl bg-stone-800/40 backdrop-blur-sm border border-white/10 shadow-lg hover:border-cyan-500/30 hover:-translate-y-1 transition-all cursor-pointer"
-          >
-            <div class="mb-4 text-cyan-400">
-              <svelte:component
-                this={feature.icon}
-                size={48}
-                strokeWidth={1.5}
-              />
+  <!-- Features + Comparison side by side -->
+  <section class="py-10 px-5 md:px-8">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10 lg:gap-16 items-start">
+
+      <!-- Features list -->
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-slate-600 mb-6 font-medium">What it does</p>
+        <div class="divide-y divide-white/[0.05]">
+          {#each features as f, i}
+            <div class="feature-row">
+              <span class="feature-num">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <div class="text-[14px] font-medium text-white mb-0.5">{f.title}</div>
+                <div class="text-[13px] text-slate-500 leading-relaxed">{f.desc}</div>
+              </div>
             </div>
-            <h3 class="text-xl font-semibold mb-3">{feature.title}</h3>
-            <p class="text-slate-400 leading-relaxed">{feature.desc}</p>
+          {/each}
+        </div>
+      </div>
+
+      <!-- Comparison table -->
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-slate-600 mb-6 font-medium">vs everyone else</p>
+        <div class="rounded-lg border border-white/[0.08] overflow-hidden text-[13px]">
+          <div class="grid grid-cols-3 bg-white/[0.03] px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-600 border-b border-white/[0.06]">
+            <span></span>
+            <span class="text-amber-500 font-semibold">Rivara</span>
+            <span>Others</span>
           </div>
-        {/each}
+          {#each [
+            ["Works reliably",    "yes",          "mostly"],
+            ["BIP39 standard",    "yes",          "sometimes"],
+            ["Built-in swap",     "yes",          "sort of"],
+            ["No tracking",       "none",         "always tracking"],
+            ["Duress wallet",     "built-in",     "rarely"],
+            ["Source code",       "on GitHub",    "closed"],
+          ] as [label, ours, theirs]}
+            <div class="grid grid-cols-3 px-4 py-2.5 border-t border-white/[0.04]">
+              <span class="text-slate-400">{label}</span>
+              <span class="text-emerald-400">{ours}</span>
+              <span class="text-slate-600">{theirs}</span>
+            </div>
+          {/each}
+        </div>
       </div>
+
     </div>
   </section>
 
-  <!-- Comparison -->
-  <section class="py-20 px-4 md:px-8">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl md:text-5xl font-bold text-center mb-16">
-        Rivara vs "Other Wallets"
-      </h2>
-      <div
-        class="rounded-2xl bg-stone-800/40 backdrop-blur-sm border border-white/10 shadow-lg overflow-x-auto"
-      >
-        <div
-          class="grid grid-cols-3 gap-4 p-4 md:p-6 bg-cyan-900/20 font-semibold text-xs md:text-sm uppercase tracking-wider min-w-[400px]"
-        >
-          <div>Feature</div>
-          <div>Rivara</div>
-          <div>Them</div>
-        </div>
-        <div class="grid grid-cols-3 gap-4 p-6 border-t border-white/10">
-          <div class="text-slate-400">Features that work</div>
-          <div>✅ All of them</div>
-          <div>❌ Maybe half</div>
-        </div>
-        <div class="grid grid-cols-3 gap-4 p-6 border-t border-white/10">
-          <div class="text-slate-400">Standard seed phrases</div>
-          <div>✅ BIP39</div>
-          <div>⚠️ Proprietary</div>
-        </div>
-        <div class="grid grid-cols-3 gap-4 p-6 border-t border-white/10">
-          <div class="text-slate-400">Built-in exchange</div>
-          <div>✅ Actually works</div>
-          <div>❌ Broken/slow</div>
-        </div>
-        <div class="grid grid-cols-3 gap-4 p-6 border-t border-white/10">
-          <div class="text-slate-400">Tracking/Analytics</div>
-          <div>✅ None</div>
-          <div>❌ Everything</div>
-        </div>
+  <!-- CTA — tight, inline feel -->
+  <section class="py-12 px-5 md:px-8">
+    <div class="max-w-6xl mx-auto border-t border-white/[0.07] pt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      <div>
+        <p class="text-white font-semibold text-lg mb-1">Ready to try it?</p>
+        <p class="text-slate-500 text-sm">30 seconds to set up. No account. Nothing to install.</p>
       </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="py-20 md:py-32 px-4 md:px-8 text-center">
-    <h2 class="text-3xl md:text-5xl font-bold mb-6">Ready to switch?</h2>
-    <p class="text-lg md:text-xl text-slate-400 mb-12">
-      Join the Rivara community and take control of your crypto
-    </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      {#if isUnlocked}
-        <button
-          class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-          on:click={() => goto("/wallet")}
-        >
-          Open Wallet →
-        </button>
-      {:else if hasWallet}
-        <button
-          class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-          on:click={() => goto("/unlock")}
-        >
-          Unlock Wallet →
-        </button>
-      {:else}
-        <button
-          class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-          on:click={() => goto("/create")}
-        >
-          Create Your Wallet →
-        </button>
-        <button
-          class="px-8 py-4 text-lg bg-gradient-to-r from-cyan-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-cyan-500 hover:to-cyan-500 transition shadow-lg shadow-cyan-500/25"
-          on:click={() => goto("/import")}
-        >
-          Import Your Wallet →
-        </button>
-      {/if}
+      <div class="flex gap-2.5 shrink-0">
+        {#if isUnlocked}
+          <button class="cta-primary px-5 py-2.5 text-sm" on:click={() => goto("/wallet")}>Open Wallet</button>
+        {:else if hasWallet}
+          <button class="cta-primary px-5 py-2.5 text-sm" on:click={() => goto("/unlock")}>Unlock Wallet</button>
+        {:else}
+          <button class="cta-ghost px-5 py-2.5 text-sm" on:click={() => goto("/import")}>Import seed</button>
+          <button class="cta-primary px-5 py-2.5 text-sm" on:click={() => goto("/create")}>Create wallet</button>
+        {/if}
+      </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer
-    class="max-w-6xl mx-auto px-4 md:px-8 py-12 border-t border-white/10 text-center"
-  >
-    <div class="flex justify-center gap-8 mb-4">
-      <a
-        href="https://github.com/DogeGage/Rivara-Wallet"
-        target="_blank"
-        class="text-slate-400 hover:text-cyan-400 transition flex items-center gap-2"
-      >
-        <Github size={18} />
-        GitHub
-      </a>
-      <a
-        href="/terms"
-        class="text-slate-400 hover:text-cyan-400 transition flex items-center gap-2"
-      >
-        <FileText size={18} />
-        Terms
-      </a>
-      <a
-        href="/privacy"
-        class="text-slate-400 hover:text-cyan-400 transition flex items-center gap-2"
-      >
-        <Shield size={18} />
-        Privacy
-      </a>
+  <footer class="max-w-6xl mx-auto px-5 md:px-8 py-7 border-t border-white/[0.06]">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <p class="text-slate-700 text-xs">© 2024–2026 Rivara Wallet</p>
+      <div class="flex gap-5">
+        <a href="https://github.com/DogeGage/Rivara-Wallet" target="_blank" class="footer-link"><Github size={13}/> GitHub</a>
+        <a href="/terms"   class="footer-link"><FileText size={13}/> Terms</a>
+        <a href="/privacy" class="footer-link"><Shield size={13}/> Privacy</a>
+      </div>
     </div>
-    <p class="text-slate-500 text-sm">
-      © 2024-2026 Rivara Wallet. Source available on <a
-        href="https://github.com/DogeGage/Rivara-Wallet"
-        target="_blank"
-        class="text-cyan-400 hover:underline">GitHub</a
-      >.
-    </p>
   </footer>
 </div>
 
 <style>
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    color: #64748b;
+    font-size: 0.8125rem;
+    border-radius: 0.4rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  .nav-link:hover { color: #e2e8f0; background: rgba(255,255,255,0.05); }
+
+  .cta-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.1rem;
+    background: #b45309;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .cta-primary:hover { background: #92400e; }
+
+  .cta-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.1rem;
+    background: transparent;
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .cta-ghost:hover { background: rgba(255,255,255,0.05); color: white; }
+
+  .mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    color: #64748b;
+    font-size: 0.875rem;
+    border-radius: 0.4rem;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .mobile-nav-item:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; }
+
+  .feature-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+  .feature-num {
+    font-size: 0.65rem;
+    font-family: monospace;
+    color: #334155;
+    min-width: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .footer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #475569;
+    font-size: 0.8rem;
+    transition: color 0.15s;
+  }
+  .footer-link:hover { color: #f59e0b; }
+
   .shape {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.2;
-    background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
-    animation: float 20s infinite ease-in-out;
+    filter: blur(90px);
+    opacity: 0.08;
+    background: linear-gradient(135deg, #92400e, #7c3aed);
+    animation: float 32s infinite ease-in-out;
   }
-
-  .shape-1 {
-    width: 400px;
-    height: 400px;
-    top: -200px;
-    left: -200px;
-  }
-
-  .shape-2 {
-    width: 300px;
-    height: 300px;
-    top: 50%;
-    right: -50px;
-    animation-delay: -5s;
-  }
-
-  .shape-3 {
-    width: 250px;
-    height: 250px;
-    bottom: -125px;
-    left: 30%;
-    animation-delay: -10s;
-  }
+  .shape-1 { width: 500px; height: 500px; top: -180px; left: -100px; }
+  .shape-2 { width: 280px; height: 280px; top: 55%; right: -60px; animation-delay: -12s; }
 
   @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0) rotate(0deg);
-    }
-    50% {
-      transform: translateY(-50px) rotate(180deg);
-    }
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-30px); }
   }
 </style>

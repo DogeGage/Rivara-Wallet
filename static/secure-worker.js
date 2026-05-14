@@ -2,161 +2,115 @@
  * Rivara Wallet - Secure Service Worker
  * Copyright (c) 2024-2026 DogeGage
  * Licensed under DogeGage Source Available License
- * 
- * This Service Worker holds the non-extractable CryptoKey
- * Main thread cannot access it directly - must send messages
+ *
+ * Holds the non-extractable AES-GCM CryptoKey in SW scope.
+ * The main thread communicates via postMessage — the key never leaves this scope.
  */
 
-let cryptoKey = null;
-let salt = null;
-let lockTimeout = null;
 const AUTO_LOCK_MS = 5 * 60 * 1000; // 5 minutes
 
-// Reset auto-lock timer
+let cryptoKey    = null;
+let lockTimeout  = null;
+let lockDeadline = 0; // absolute timestamp when the lock fires
+
+// ─── Auto-lock ───────────────────────────────────────────────────────────────
+
 function resetLockTimer() {
-  if (lockTimeout) {
-    clearTimeout(lockTimeout);
-  }
-  lockTimeout = setTimeout(() => {
-    console.log('[SecureWorker] Auto-locking due to inactivity');
-    cryptoKey = null;
-    salt = null;
-  }, AUTO_LOCK_MS);
+  if (lockTimeout) clearTimeout(lockTimeout);
+  lockDeadline = Date.now() + AUTO_LOCK_MS;
+  lockTimeout  = setTimeout(lockNow, AUTO_LOCK_MS);
 }
 
-// Handle messages from main thread
+function lockNow() {
+  cryptoKey    = null;
+  lockTimeout  = null;
+  lockDeadline = 0;
+}
+
+// ─── Message handler ─────────────────────────────────────────────────────────
+
 self.addEventListener('message', async (event) => {
-  const { id, type, payload } = event.data;
+  // Reject messages from any origin other than our own app.
+  if (event.origin !== self.location.origin) return;
+
+  const { id, type, payload } = event.data ?? {};
+
+  const reply = (data) =>
+    (event.ports[0] ?? event.source)?.postMessage({ id, success: true,  data });
+  const fail  = (msg)  =>
+    (event.ports[0] ?? event.source)?.postMessage({ id, success: false, error: msg });
 
   try {
-    let response = { success: true, data: null };
-
     switch (type) {
+
       case 'DERIVE_AND_STORE_KEY': {
-        // SECURITY: Derive key INSIDE Service Worker
-        // Password comes in, key NEVER leaves
         const { password, salt: saltArray } = payload;
-        
-        console.log('[SecureWorker] Deriving key with', saltArray.length, 'byte salt');
-        
-        const encoder = new TextEncoder();
-        const passwordBuffer = encoder.encode(password);
-        
-        // Import password as key material
-        const importedKey = await crypto.subtle.importKey(
+        const salt = new Uint8Array(saltArray);
+
+        const keyMaterial = await crypto.subtle.importKey(
           'raw',
-          passwordBuffer,
+          new TextEncoder().encode(password),
           { name: 'PBKDF2' },
           false,
-          ['deriveBits', 'deriveKey']
+          ['deriveKey'],
         );
-        
-        salt = new Uint8Array(saltArray);
-        
-        // Derive the actual encryption key (NON-EXTRACTABLE)
-        console.log('[SecureWorker] Starting PBKDF2 derivation (600k iterations)...');
+
+        // NON-EXTRACTABLE — cannot be exported from SW scope, ever.
         cryptoKey = await crypto.subtle.deriveKey(
-          {
-            name: 'PBKDF2',
-            salt: salt,
-            iterations: 600000,
-            hash: 'SHA-256'
-          },
-          importedKey,
+          { name: 'PBKDF2', salt, iterations: 600_000, hash: 'SHA-256' },
+          keyMaterial,
           { name: 'AES-GCM', length: 256 },
-          false, // ❌ NON-EXTRACTABLE - Cannot be exported, ever
-          ['decrypt']
+          false,
+          ['decrypt'],
         );
-        
+
         resetLockTimer();
-        
-        console.log('[SecureWorker] ✅ Key derived and stored securely (non-extractable)');
-        response.data = { stored: true };
+        reply({ stored: true });
         break;
       }
 
       case 'DECRYPT_WALLET': {
-        if (!cryptoKey) {
-          throw new Error('No key stored - wallet is locked');
-        }
+        if (!cryptoKey) { fail('No key stored — wallet is locked'); break; }
 
-        const { encryptedData } = payload;
-        
-        // Convert from base64
-        const data = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-        
-        // Extract salt, iv, and encrypted data
-        const storedSalt = data.slice(0, 16);
-        const iv = data.slice(16, 28);
-        const encrypted = data.slice(28);
+        const raw       = Uint8Array.from(atob(payload.encryptedData), c => c.charCodeAt(0));
+        const iv        = raw.slice(16, 28);
+        const encrypted = raw.slice(28);
 
-        // Decrypt using the non-extractable key
-        const decryptedData = await crypto.subtle.decrypt(
-          { name: 'AES-GCM', iv: iv },
+        const plaintext = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv },
           cryptoKey,
-          encrypted
+          encrypted,
         );
 
-        // Convert back to string
-        const decoder = new TextDecoder();
-        const seedPhrase = decoder.decode(decryptedData);
-
         resetLockTimer();
-        response.data = seedPhrase;
+        reply(new TextDecoder().decode(plaintext));
         break;
       }
 
       case 'LOCK': {
-        cryptoKey = null;
-        salt = null;
-        if (lockTimeout) {
-          clearTimeout(lockTimeout);
-          lockTimeout = null;
-        }
-        console.log('[SecureWorker] Wallet locked');
-        response.data = { locked: true };
+        lockNow();
+        reply({ locked: true });
         break;
       }
 
       case 'PING': {
-        response.data = { 
-          hasKey: cryptoKey !== null,
-          autoLockIn: lockTimeout ? AUTO_LOCK_MS : 0
-        };
+        reply({
+          hasKey:     cryptoKey !== null,
+          // Remaining ms until auto-lock fires (0 if already locked / no timer)
+          autoLockIn: lockDeadline > 0 ? Math.max(0, lockDeadline - Date.now()) : 0,
+        });
         break;
       }
 
       default:
-        throw new Error(`Unknown message type: ${type}`);
+        fail(`Unknown message type: ${type}`);
     }
-
-    // Send response back to main thread
-    event.ports[0]?.postMessage({ id, ...response }) || 
-      event.source.postMessage({ id, ...response });
-
-  } catch (error) {
-    console.error('[SecureWorker] Error:', error);
-    event.ports[0]?.postMessage({ 
-      id, 
-      success: false, 
-      error: error.message 
-    }) || event.source.postMessage({ 
-      id, 
-      success: false, 
-      error: error.message 
-    });
+  } catch (err) {
+    fail(err?.message ?? 'Unknown error');
   }
 });
 
-// Service Worker lifecycle
-self.addEventListener('install', (event) => {
-  console.log('[SecureWorker] Installing...');
-  self.skipWaiting();
-});
+// ─── Lifecycle ────────────────────────────────────────────────────────────────
 
-self.addEventListener('activate', (event) => {
-  console.log('[SecureWorker] Activated');
-  event.waitUntil(self.clients.claim());
-});
-
-console.log('[SecureWorker] Loaded and ready');
+self.addEventListener('install',  ()      => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));

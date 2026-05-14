@@ -11,13 +11,11 @@ import { priceService } from './price-service';
 class SolanaService {
     constructor() {
         this.rpcEndpoint = 'https://api.rivarawallet.xyz/api/solana/rpc';
-        this.cachedPrice = 150; // Default fallback
+        this.cachedPrice = 150; // Fallback — overwritten on first successful price fetch
     }
 
     async getBalance(address) {
         try {
-            console.log('Checking Solana balance...');
-
             const response = await fetch(this.rpcEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -137,8 +135,6 @@ class SolanaService {
 
     async getTransactions(address) {
         try {
-            console.log('Checking Solana transactions...');
-
             const response = await fetch(this.rpcEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

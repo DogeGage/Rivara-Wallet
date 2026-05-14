@@ -269,12 +269,17 @@
     currentRates,
   );
 
+  // Reactive auth guard — consistent with exchange and settings pages
+  $: if (browser && !$isUnlocked) {
+    goto("/unlock");
+  }
+
   onMount(async () => {
-    console.log("🔵 Wallet page mounted");
     if (!browser) return;
 
     isCurrentUnlock.set(false);
 
+    // Sync store from sessionStorage on first mount
     const unlocked = sessionStorage.getItem("walletUnlocked") === "true";
     if (!unlocked) {
       goto("/unlock");
@@ -283,10 +288,7 @@
     isUnlocked.set(true);
 
     const walletData = walletService.getWallet();
-    console.log("🔵 Wallet data from service:", walletData);
-
     if (!walletData) {
-      console.log("❌ No wallet data, redirecting to unlock");
       goto("/unlock");
       return;
     }
@@ -296,10 +298,6 @@
     await walletService.hydrateWalletFromCache();
     pageLoading = false;
 
-    // Only fetch fresh balances when user explicitly refreshes
-    console.log(
-      "🔵 Fetching exchange rates (balances only on manual refresh)...",
-    );
     await fetchExchangeRates();
   });
 

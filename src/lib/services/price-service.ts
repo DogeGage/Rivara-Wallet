@@ -111,14 +111,17 @@ class PriceService {
    */
   private getFallbackPrices(): PriceData {
     return {
-      bitcoin: { usd: 95000 },
-      ethereum: { usd: 3000 },
-      solana: { usd: 150 },
-      tron: { usd: 0.15 },
-      dogecoin: { usd: 0.08 },
-      litecoin: { usd: 100 },
-      "polygon-ecosystem-token": { usd: 0.5 },
-      "matic-network": { usd: 0.5 }, // Legacy alias
+      bitcoin: { usd: 79271 },
+      ethereum: { usd: 2257.68 },
+      solana: { usd: 91.07 },
+      tron: { usd: 0.35 },
+      dogecoin: { usd: 0.11 },
+      litecoin: { usd: 56.96 },
+      "polygon-ecosystem-token": { usd: 0.10 },
+      "matic-network": { usd: 0.10 }, // Legacy alias
+      "avalanche-2": { usd: 9.75 },
+      binancecoin: { usd: 671.38 },
+      tezos: { usd: 0.38 },
     };
   }
 
@@ -127,14 +130,17 @@ class PriceService {
    */
   private getFallbackPrice(coinId: string): number {
     const fallbacks: Record<string, number> = {
-      bitcoin: 95000,
-      ethereum: 3000,
-      solana: 150,
-      tron: 0.15,
-      dogecoin: 0.08,
-      litecoin: 100,
-      "polygon-ecosystem-token": 0.5,
-      "matic-network": 0.5, // Legacy alias
+      bitcoin: 79271,
+      ethereum: 2257.68,
+      solana: 91.07,
+      tron: 0.35,
+      dogecoin: 0.11,
+      litecoin: 56.96,
+      "polygon-ecosystem-token": 0.10,
+      "matic-network": 0.10, // Legacy alias
+      "avalanche-2": 9.75,
+      binancecoin: 671.38,
+      tezos: 0.38,
     };
     return fallbacks[coinId] || 0;
   }

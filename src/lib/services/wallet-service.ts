@@ -4,6 +4,7 @@
  * Licensed under DogeGage Source Available License
  */
 import { wallet, isUnlocked, balancesLoading } from "$lib/stores/wallet";
+import type { Wallet, WalletAsset } from "$lib/stores/wallet";
 import { get } from "svelte/store";
 import {
   BitcoinService,
@@ -11,8 +12,6 @@ import {
   LitecoinService,
 } from "./utxo-chain-service.js";
 import {
-  EthereumService,
-  PolygonService,
   EVMChainService,
   AvalancheService,
   BscService,
@@ -22,6 +21,15 @@ import { TronService } from "./tron-service.js";
 import { DGAGEService } from "./dgage-service.js";
 // @ts-ignore - JS module
 import { TokenScanner } from "./token-scanner.js";
+
+/** All native chain keys in the wallet — used for cache loops. */
+const CHAIN_KEYS = [
+  "bitcoin", "dogecoin", "litecoin",
+  "ethereum", "polygon", "tron",
+  "solana", "dgage", "avalanche", "bsc",
+] as const;
+
+type ChainKey = typeof CHAIN_KEYS[number];
 
 // SECURITY: HMAC key for cached balance integrity (generated per-session)
 let _sessionHmacKey: CryptoKey | null = null;
@@ -54,11 +62,20 @@ async function verifyHmac(data: string, hmac: string): Promise<boolean> {
 
 class WalletService {
   private isFetching = false;
-  private tokenScanner: any;
 
-  constructor() {
-    this.tokenScanner = new TokenScanner();
-  }
+  // Chain services are singletons — no reason to re-instantiate on every refresh.
+  private readonly bitcoin   = new BitcoinService();
+  private readonly dogecoin  = new DogecoinService();
+  private readonly litecoin  = new LitecoinService();
+  private readonly ethereum  = new EVMChainService("ethereum");
+  private readonly polygon   = new EVMChainService("polygon");
+  private readonly solana    = new SolanaService();
+  private readonly tron      = new TronService();
+  private readonly avalanche = new AvalancheService();
+  private readonly bsc       = new BscService();
+  private readonly dgage     = new DGAGEService();
+  // @ts-ignore
+  private readonly tokens    = new TokenScanner();
 
   /**
    * Fetch EVM chain balances (ETH, Polygon) via backend worker that proxies Ankr Advanced API.
@@ -97,7 +114,7 @@ class WalletService {
     for (const asset of assets) {
       if (!asset) continue;
       const blockchain = asset.blockchain as string | undefined;
-      const isNative = !asset.contractAddress;
+      const isNative = asset.tokenType === "NATIVE" || !asset.contractAddress;
       if (!isNative || !blockchain) continue;
 
       const balance = Number(asset.balance ?? 0);
@@ -135,26 +152,15 @@ class WalletService {
       throw new Error("Invalid seed phrase");
     }
 
-    // Instantiate chain services via ES module imports (no window polling)
-    const bitcoinService = new BitcoinService();
-    const dogecoinService = new DogecoinService();
-    const litecoinService = new LitecoinService();
-    const ethereumService = new EthereumService();
-    const polygonService = new PolygonService();
-    const solanaService = new SolanaService();
-    const tronService = new TronService();
-    const avalancheService = new AvalancheService();
-    const bscService = new BscService();
-
-    // Derive addresses only — no private keys stored
-    const ethData = ethereumService.deriveAddress(mnemonic);
-    const btcData = bitcoinService.deriveAddress(mnemonic);
-    const dogeData = dogecoinService.deriveAddress(mnemonic);
-    const ltcData = litecoinService.deriveAddress(mnemonic);
-    const trxData = tronService.deriveAddress(mnemonic);
-    const solData = await solanaService.deriveAddress(mnemonic);
-    const avaxData = avalancheService.deriveAddress(mnemonic);
-    const bnbData = bscService.deriveAddress(mnemonic);
+    // Derive addresses — use singleton service instances (no re-instantiation needed)
+    const ethData  = this.ethereum.deriveAddress(mnemonic);
+    const btcData  = this.bitcoin.deriveAddress(mnemonic);
+    const dogeData = this.dogecoin.deriveAddress(mnemonic);
+    const ltcData  = this.litecoin.deriveAddress(mnemonic);
+    const trxData  = this.tron.deriveAddress(mnemonic);
+    const solData  = await this.solana.deriveAddress(mnemonic);
+    const avaxData = this.avalanche.deriveAddress(mnemonic);
+    const bnbData  = this.bsc.deriveAddress(mnemonic);
 
     // SECURITY: Only store addresses and public data — NO mnemonic, NO privateKey
     const newWallet = {
@@ -256,17 +262,7 @@ class WalletService {
         ankrEvmBalances = null;
       }
 
-      // Instantiate via ES module imports
-      const bitcoinService = new BitcoinService();
-      const dogecoinService = new DogecoinService();
-      const litecoinService = new LitecoinService();
-      const ethereumService = new EVMChainService("ethereum");
-      const polygonService = new EVMChainService("polygon");
-      const solanaService = new SolanaService();
-      const tronService = new TronService();
-      const avalancheService = new AvalancheService();
-      const bscService = new BscService();
-      const dgageService = new DGAGEService();
+      // Use singleton service instances.
 
       // Helper: update a single chain as soon as its balance resolves
       const tasks: Promise<void>[] = [];
@@ -291,75 +287,34 @@ class WalletService {
         tasks.push(task);
       };
 
-      updateChain(
-        "bitcoin",
-        bitcoinService
-          .getBalanceUSD(currentWallet.bitcoin.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      updateChain(
-        "dogecoin",
-        dogecoinService
-          .getBalanceUSD(currentWallet.dogecoin.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      updateChain(
-        "litecoin",
-        litecoinService
-          .getBalanceUSD(currentWallet.litecoin.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      // Ethereum / Polygon via Ankr (with per-chain fallback)
-      if (ankrEvmBalances?.ethereum) {
-        updateChain("ethereum", Promise.resolve(ankrEvmBalances.ethereum));
-      } else {
+      // Dispatch all chain fetches — Ankr result used for ETH/Polygon where available.
+      const fallback = { balance: "0", balanceUSD: "0" };
+
+      const chainServices: Record<ChainKey, { getBalanceUSD: (addr: string) => Promise<{ balance: string; balanceUSD: string }> }> = {
+        bitcoin:   this.bitcoin,
+        dogecoin:  this.dogecoin,
+        litecoin:  this.litecoin,
+        ethereum:  this.ethereum,
+        polygon:   this.polygon,
+        solana:    this.solana,
+        tron:      this.tron,
+        avalanche: this.avalanche,
+        bsc:       this.bsc,
+        dgage:     this.dgage,
+      };
+
+      for (const key of CHAIN_KEYS) {
+        // Prefer cached Ankr result for ETH/Polygon
+        const ankr = ankrEvmBalances?.[key as "ethereum" | "polygon"];
         updateChain(
-          "ethereum",
-          ethereumService
-            .getBalanceUSD(currentWallet.ethereum.address)
-            .catch(() => ({ balance: "0", balanceUSD: "0" })),
+          key,
+          ankr
+            ? Promise.resolve(ankr)
+            : chainServices[key]
+                .getBalanceUSD(currentWallet[key].address)
+                .catch(() => fallback),
         );
       }
-      if (ankrEvmBalances?.polygon) {
-        updateChain("polygon", Promise.resolve(ankrEvmBalances.polygon));
-      } else {
-        updateChain(
-          "polygon",
-          polygonService
-            .getBalanceUSD(currentWallet.polygon.address)
-            .catch(() => ({ balance: "0", balanceUSD: "0" })),
-        );
-      }
-      updateChain(
-        "solana",
-        solanaService
-          .getBalanceUSD(currentWallet.solana.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      updateChain(
-        "tron",
-        tronService
-          .getBalanceUSD(currentWallet.tron.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      updateChain(
-        "avalanche",
-        avalancheService
-          .getBalanceUSD(currentWallet.avalanche.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      updateChain(
-        "bsc",
-        bscService
-          .getBalanceUSD(currentWallet.bsc.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
-      updateChain(
-        "dgage",
-        dgageService
-          .getBalanceUSD(currentWallet.dgage.address)
-          .catch(() => ({ balance: "0", balanceUSD: "0" })),
-      );
 
       // USDC detection (does not block native balances)
       const usdcTask = (async () => {
@@ -371,14 +326,14 @@ class WalletService {
         let detectedPolygonTokens: any[] = [];
         try {
           const [ethUsdc, polyUsdc] = await Promise.all([
-            this.tokenScanner
+            this.tokens
               .getERC20TokenData(
                 currentWallet.ethereum.address,
                 ethUsdcContract,
                 "ethereum",
               )
               .catch(() => null),
-            this.tokenScanner
+            this.tokens
               .getERC20TokenData(
                 currentWallet.polygon.address,
                 polygonUsdcContract,
@@ -436,61 +391,18 @@ class WalletService {
     return null;
   }
 
-  // SECURITY FIX 7: HMAC integrity on cached balances
-  async cacheBalances(walletData: any) {
-    if (!walletData) return;
+  /** Persist chain balances to localStorage with an HMAC integrity tag. */
+  async cacheBalances(walletData: Wallet): Promise<void> {
+    const cache: Record<string, { balance: string; balanceUSD: string }> & { timestamp: number } = { timestamp: Date.now() } as any;
 
-    const cache: Record<string, any> = {
-      ethereum: {
-        balance: walletData.ethereum.balance,
-        balanceUSD: walletData.ethereum.balanceUSD,
-      },
-      bitcoin: {
-        balance: walletData.bitcoin.balance,
-        balanceUSD: walletData.bitcoin.balanceUSD,
-      },
-      dogecoin: {
-        balance: walletData.dogecoin.balance,
-        balanceUSD: walletData.dogecoin.balanceUSD,
-      },
-      litecoin: {
-        balance: walletData.litecoin.balance,
-        balanceUSD: walletData.litecoin.balanceUSD,
-      },
-      tron: {
-        balance: walletData.tron.balance,
-        balanceUSD: walletData.tron.balanceUSD,
-      },
-      solana: {
-        balance: walletData.solana.balance,
-        balanceUSD: walletData.solana.balanceUSD,
-      },
-      polygon: {
-        balance: walletData.polygon.balance,
-        balanceUSD: walletData.polygon.balanceUSD,
-      },
-      dgage: {
-        balance: walletData.dgage.balance,
-        balanceUSD: walletData.dgage.balanceUSD,
-      },
-      avalanche: {
-        balance: walletData.avalanche.balance,
-        balanceUSD: walletData.avalanche.balanceUSD,
-      },
-      bsc: {
-        balance: walletData.bsc.balance,
-        balanceUSD: walletData.bsc.balanceUSD,
-      },
-      timestamp: Date.now(),
-    };
+    for (const key of CHAIN_KEYS) {
+      const asset = walletData[key] as WalletAsset;
+      cache[key] = { balance: asset.balance, balanceUSD: asset.balanceUSD };
+    }
 
     const cacheJson = JSON.stringify(cache);
     const hmac = await computeHmac(cacheJson);
-
-    localStorage.setItem(
-      "cachedBalances",
-      JSON.stringify({ data: cacheJson, hmac }),
-    );
+    localStorage.setItem("cachedBalances", JSON.stringify({ data: cacheJson, hmac }));
   }
 
   async loadCachedBalances(): Promise<any | null> {
@@ -530,77 +442,28 @@ class WalletService {
 
   /**
    * Hydrate the in-memory wallet store with cached balances (if available).
-   * Used on UI mount to show something instantly and avoid flaky network calls.
+   * Shown immediately on mount so the UI isn't blank while fetching.
    */
-  async hydrateWalletFromCache() {
-    const currentWallet = get(wallet);
-    if (!currentWallet) return;
+  async hydrateWalletFromCache(): Promise<void> {
+    const current = get(wallet);
+    if (!current) return;
 
     const cached = await this.loadCachedBalances();
     if (!cached) return;
 
-    const updatedWallet = {
-      ...currentWallet,
-      ethereum: {
-        ...currentWallet.ethereum,
-        balance: cached.ethereum?.balance ?? currentWallet.ethereum.balance,
-        balanceUSD:
-          cached.ethereum?.balanceUSD ?? currentWallet.ethereum.balanceUSD,
-      },
-      bitcoin: {
-        ...currentWallet.bitcoin,
-        balance: cached.bitcoin?.balance ?? currentWallet.bitcoin.balance,
-        balanceUSD:
-          cached.bitcoin?.balanceUSD ?? currentWallet.bitcoin.balanceUSD,
-      },
-      dogecoin: {
-        ...currentWallet.dogecoin,
-        balance: cached.dogecoin?.balance ?? currentWallet.dogecoin.balance,
-        balanceUSD:
-          cached.dogecoin?.balanceUSD ?? currentWallet.dogecoin.balanceUSD,
-      },
-      litecoin: {
-        ...currentWallet.litecoin,
-        balance: cached.litecoin?.balance ?? currentWallet.litecoin.balance,
-        balanceUSD:
-          cached.litecoin?.balanceUSD ?? currentWallet.litecoin.balanceUSD,
-      },
-      tron: {
-        ...currentWallet.tron,
-        balance: cached.tron?.balance ?? currentWallet.tron.balance,
-        balanceUSD: cached.tron?.balanceUSD ?? currentWallet.tron.balanceUSD,
-      },
-      solana: {
-        ...currentWallet.solana,
-        balance: cached.solana?.balance ?? currentWallet.solana.balance,
-        balanceUSD:
-          cached.solana?.balanceUSD ?? currentWallet.solana.balanceUSD,
-      },
-      polygon: {
-        ...currentWallet.polygon,
-        balance: cached.polygon?.balance ?? currentWallet.polygon.balance,
-        balanceUSD:
-          cached.polygon?.balanceUSD ?? currentWallet.polygon.balanceUSD,
-      },
-      dgage: {
-        ...currentWallet.dgage,
-        balance: cached.dgage?.balance ?? currentWallet.dgage.balance,
-        balanceUSD: cached.dgage?.balanceUSD ?? currentWallet.dgage.balanceUSD,
-      },
-      avalanche: {
-        ...currentWallet.avalanche,
-        balance: cached.avalanche?.balance ?? currentWallet.avalanche.balance,
-        balanceUSD:
-          cached.avalanche?.balanceUSD ?? currentWallet.avalanche.balanceUSD,
-      },
-      bsc: {
-        ...currentWallet.bsc,
-        balance: cached.bsc?.balance ?? currentWallet.bsc.balance,
-        balanceUSD: cached.bsc?.balanceUSD ?? currentWallet.bsc.balanceUSD,
-      },
-    };
+    // Build the updated wallet by merging cached balance/balanceUSD per chain.
+    const updated = { ...current };
+    for (const key of CHAIN_KEYS) {
+      const entry = cached[key] as { balance: string; balanceUSD: string } | undefined;
+      if (!entry) continue;
+      updated[key] = {
+        ...(current[key] as WalletAsset),
+        balance:    entry.balance    ?? (current[key] as WalletAsset).balance,
+        balanceUSD: entry.balanceUSD ?? (current[key] as WalletAsset).balanceUSD,
+      };
+    }
 
-    wallet.set(updatedWallet);
+    wallet.set(updated);
   }
 
   lock() {
@@ -611,37 +474,25 @@ class WalletService {
     _sessionHmacKey = null;
   }
 
-  getWallet() {
-    const walletData = get(wallet);
+  getWallet(): Wallet | null {
+    const current = get(wallet);
+    if (!current) return null;
 
-    // Migration: Fix object addresses for dogecoin and litecoin
-    if (walletData) {
-      let needsUpdate = false;
+    // One-time migration: old code stored address as an object instead of a string.
+    const keysToMigrate: ChainKey[] = ["dogecoin", "litecoin"];
+    let dirty = false;
 
-      if (
-        walletData.dogecoin &&
-        typeof walletData.dogecoin.address === "object"
-      ) {
-        walletData.dogecoin.address =
-          (walletData.dogecoin.address as any).address || "";
-        needsUpdate = true;
-      }
-      if (
-        walletData.litecoin &&
-        typeof walletData.litecoin.address === "object"
-      ) {
-        walletData.litecoin.address =
-          (walletData.litecoin.address as any).address || "";
-        needsUpdate = true;
-      }
-
-      // Update store if migration happened
-      if (needsUpdate) {
-        wallet.set(walletData);
+    const migrated = { ...current };
+    for (const key of keysToMigrate) {
+      const asset = migrated[key] as WalletAsset;
+      if (typeof asset.address === "object") {
+        migrated[key] = { ...asset, address: (asset.address as any).address ?? "" };
+        dirty = true;
       }
     }
 
-    return walletData;
+    if (dirty) wallet.set(migrated);
+    return dirty ? migrated : current;
   }
 
   getChainService(chain: string) {

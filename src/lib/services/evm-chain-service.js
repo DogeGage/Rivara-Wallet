@@ -62,38 +62,14 @@ class EvmChainService {
 	}
 
 	/**
-	 * Derive address from mnemonic
+	 * Derive address from mnemonic.
+	 * All supported EVM chains (Ethereum, Polygon, Avalanche C-Chain, BSC)
+	 * use the standard m/44'/60'/0'/0/0 derivation path and the same address format.
 	 */
 	deriveAddress(mnemonic) {
 		const { ethers } = window.cryptoLibs;
 		const wallet = ethers.Wallet.fromMnemonic(mnemonic);
-		
-		// For AVAX, we need to handle C-Chain (EVM) addresses
-		// C-Chain uses standard EVM addresses (0x...)
-		// X-Chain and P-Chain use bech32 format (X-/P-avax...)
-		// For wallet purposes, we'll use C-Chain which is EVM-compatible
-		if (this.chain === 'avalanche') {
-			// C-Chain uses the same address as Ethereum
-			return {
-				address: wallet.address, // This is the C-Chain address
-				privateKey: wallet.privateKey
-			};
-		}
-		
-		// For BSC, it uses standard EVM addresses
-		// BSC is a fork of Ethereum and uses the same address format
-		if (this.chain === 'bsc') {
-			return {
-				address: wallet.address,
-				privateKey: wallet.privateKey
-			};
-		}
-		
-		// Standard EVM chains (Ethereum, Polygon)
-		return {
-			address: wallet.address,
-			privateKey: wallet.privateKey
-		};
+		return { address: wallet.address, privateKey: wallet.privateKey };
 	}
 
 	/**
@@ -101,7 +77,6 @@ class EvmChainService {
 	 */
 	async getBalance(address) {
 		try {
-			console.log(`Fetching ${this.config.name} balance via Worker Ankr endpoint`);
 
 			const response = await fetch(`${WORKER_URL}/api/ankr/scan`, {
 				method: 'POST',
@@ -121,7 +96,7 @@ class EvmChainService {
 
 			// Find native asset (no contract address)
 			const nativeAsset = assets.find(asset => 
-				asset.blockchain === this.config.blockchain && !asset.contractAddress
+				asset.blockchain === this.config.blockchain && (asset.tokenType === 'NATIVE' || !asset.contractAddress)
 			);
 
 			if (nativeAsset && nativeAsset.balance !== undefined) {

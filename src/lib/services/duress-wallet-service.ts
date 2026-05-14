@@ -3,124 +3,60 @@
  * Copyright (c) 2024-2026 DogeGage
  * Licensed under DogeGage Source Available License
  */
+
 /**
- * Duress Wallet Service - Generates convincing fake wallet for duress situations
+ * Duress Wallet Service
+ * Generates convincing decoy wallet data shown when unlocked with a duress password.
+ * Addresses are random but structurally valid — no real keys, no real funds.
  */
 
 export class DuressWalletService {
-  /**
-   * Generate a fake wallet that looks real but has small balances
-   */
   generateFakeWallet() {
-    // Generate fake addresses (deterministic based on a fake seed)
-    const fakeAddresses = {
-      bitcoin: this.generateFakeBitcoinAddress(),
-      ethereum: this.generateFakeEthereumAddress(),
-      dogecoin: this.generateFakeDogecoinAddress(),
-      litecoin: this.generateFakeLitecoinAddress(),
-      solana: this.generateFakeSolanaAddress(),
-      tron: this.generateFakeTronAddress(),
-    };
+    const eth = this.fakeEthereumAddress();
 
-    // Small fake balances ($50-200 total)
     return {
-      bitcoin: {
-        address: fakeAddresses.bitcoin,
-        balance: "0.00085000",
-        balanceUSD: "85.00",
-        transactions: [],
-      },
-      ethereum: {
-        address: fakeAddresses.ethereum,
-        balance: "0.0150",
-        balanceUSD: "45.00",
-        transactions: [],
-      },
-      dogecoin: {
-        address: fakeAddresses.dogecoin,
-        balance: "250.00000000",
-        balanceUSD: "20.00",
-        transactions: [],
-      },
-      litecoin: {
-        address: fakeAddresses.litecoin,
-        balance: "0.15000000",
-        balanceUSD: "15.00",
-        transactions: [],
-      },
-      solana: {
-        address: fakeAddresses.solana,
-        balance: "0.200000",
-        balanceUSD: "30.00",
-        transactions: [],
-      },
-      tron: {
-        address: fakeAddresses.tron,
-        balance: "50.000000",
-        balanceUSD: "7.50",
-        transactions: [],
-      },
-      polygon: {
-        address: fakeAddresses.ethereum,
-        balance: "10.00000000",
-        balanceUSD: "5.00",
-        transactions: [],
-      },
-      dgage: {
-        address: fakeAddresses.ethereum,
-        balance: "0.0000",
-        balanceUSD: "0.00",
-        transactions: [],
-      },
+      bitcoin:  { address: this.fakeBitcoinAddress(),  balance: "0.00085000", balanceUSD: "85.00",  transactions: [] },
+      ethereum: { address: eth,                         balance: "0.0150",     balanceUSD: "45.00",  transactions: [] },
+      dogecoin: { address: this.fakePrefixedAddress("D", 33), balance: "250.00000000", balanceUSD: "20.00",  transactions: [] },
+      litecoin: { address: this.fakePrefixedAddress("L", 33), balance: "0.15000000",   balanceUSD: "15.00",  transactions: [] },
+      solana:   { address: this.randomBase58(44),       balance: "0.200000",   balanceUSD: "30.00",  transactions: [] },
+      tron:     { address: this.fakePrefixedAddress("T", 33), balance: "50.000000",    balanceUSD: "7.50",   transactions: [] },
+      polygon:  { address: eth,                         balance: "10.00000000", balanceUSD: "5.00",  transactions: [] },
+      dgage:    { address: eth,                         balance: "0.0000",      balanceUSD: "0.00",  transactions: [] },
     };
   }
 
-  generateFakeBitcoinAddress() {
-    const chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    let addr = "1";
-    const length = 26 + Math.floor(Math.random() * 8);
-    for (let i = 0; i < length; i++) {
-      addr += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return addr;
+  // ─── Private address generators (crypto.getRandomValues, not Math.random) ──
+
+  private randomBytes(n: number): Uint8Array {
+    return crypto.getRandomValues(new Uint8Array(n));
   }
 
-  generateFakeEthereumAddress() {
-    return "0x" + this.randomHex(40);
+  private randomHex(byteCount: number): string {
+    return Array.from(this.randomBytes(byteCount))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
   }
 
-  generateFakeDogecoinAddress() {
-    return "D" + this.randomString(33);
+  /** Random string from a Base58 alphabet (no 0, O, I, l). */
+  private randomBase58(length: number): string {
+    const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    const bytes    = this.randomBytes(length);
+    return Array.from(bytes, b => ALPHABET[b % ALPHABET.length]).join("");
   }
 
-  generateFakeLitecoinAddress() {
-    return "L" + this.randomString(33);
+  private fakeBitcoinAddress(): string {
+    // P2PKH: starts with "1", 26–34 chars total
+    const length = 26 + (this.randomBytes(1)[0] % 9);
+    return "1" + this.randomBase58(length);
   }
 
-  generateFakeSolanaAddress() {
-    return this.randomString(44);
+  private fakeEthereumAddress(): string {
+    return "0x" + this.randomHex(20);
   }
 
-  generateFakeTronAddress() {
-    return "T" + this.randomString(33);
-  }
-
-  randomString(length: number) {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  randomHex(length: number) {
-    const chars = "0123456789abcdef";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+  private fakePrefixedAddress(prefix: string, bodyLength: number): string {
+    return prefix + this.randomBase58(bodyLength);
   }
 }
 

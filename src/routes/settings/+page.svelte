@@ -27,9 +27,11 @@
     Sun,
     Moon,
     Terminal,
+    List,
   } from "lucide-svelte";
   import { tuffbackupService } from "$lib/services/tuffbackup-service";
   import { walletService } from "$lib/services/wallet-service";
+  import { priceService } from "$lib/services/price-service";
   import { encryptionService } from "$lib/services/encryption-service";
   import { addressBookService } from "$lib/services/address-book-service";
   import type { Contact } from "$lib/services/address-book-service";
@@ -183,14 +185,14 @@
   const lockTimeOptions = [5, 10, 15, 30, 60];
 
   const tabs = [
-    { id: "general", label: "General", icon: Settings },
-    { id: "security", label: "Security", icon: Shield },
-    { id: "backup", label: "Backup & Recovery", icon: Save },
-    { id: "privatekeys", label: "Private Keys", icon: Key },
-    { id: "addressbook", label: "Address Book", icon: BookOpen },
-    { id: "privacy", label: "Privacy", icon: Lock },
-    { id: "about", label: "About", icon: Info },
-    { id: "danger", label: "Danger Zone", icon: AlertTriangle },
+    { id: "general",     label: "General",          icon: Settings },
+    { id: "security",    label: "Security",          icon: Shield },
+    { id: "backup",      label: "Backup & Recovery", icon: Save },
+    { id: "privatekeys", label: "Private Keys",      icon: Key },
+    { id: "addressbook", label: "Address Book",      icon: BookOpen },
+    { id: "privacy",     label: "Privacy",           icon: Lock },
+    { id: "about",       label: "About",             icon: Info },
+    { id: "danger",      label: "Danger Zone",       icon: AlertTriangle },
   ];
 
   // Dev mode tab is shown only when dev mode is active
@@ -204,6 +206,15 @@
 
   onMount(() => {
     if (!$isUnlocked) return;
+
+    // Read tab from URL query param (e.g. /settings?tab=changelog)
+    if (browser) {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam && tabs.some(t => t.id === tabParam)) {
+        activeTab = tabParam;
+      }
+    }
 
     // Load currency preference
     const saved = localStorage.getItem("preferredCurrency");
@@ -1328,6 +1339,29 @@
                 <button class="btn-danger" on:click={() => devMode.disable()}
                   >Disable Dev Mode</button
                 >
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="item-info">
+                <strong>Manual Price Update</strong>
+                <span>Force refresh global cached prices on the backend.</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn-secondary" on:click={async () => {
+                  try {
+                    const res = await fetch("https://api.rivarawallet.xyz/prices/refresh");
+                    if (res.ok) {
+                      priceService.clearCache();
+                      walletService.fetchBalances();
+                      alert("Backend prices updated & refreshed locally.");
+                    } else {
+                      alert("Failed to refresh prices.");
+                    }
+                  } catch (err) {
+                    alert("Error: " + err);
+                  }
+                }}>Refresh Prices</button>
               </div>
             </div>
           </div>
