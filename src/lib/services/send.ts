@@ -281,6 +281,8 @@ export function validateAddress(chain: CryptoChain, address: string): boolean {
 
     case "ethereum":
     case "polygon":
+    case "avalanche":
+    case "bsc":
       return validateEIP55Checksum(address);
 
     case "dogecoin":

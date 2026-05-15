@@ -4,6 +4,16 @@
 
   const changelog = [
     {
+      version: "v7.0.5",
+      title: "Dependency cleanup",
+      date: "May 2026",
+      points: [
+        "Removed all CDN dependencies — crypto libraries now bundled locally and served from static assets",
+        "Expanded transaction dry-run test suite to cover all supported chains",
+        "Fixed dev mode detection in the security monitor to use the correct storage key"
+      ]
+    },
+    {
       version: "v7.0.4",
       title: "Bug fix two",
       date: "May 2026",

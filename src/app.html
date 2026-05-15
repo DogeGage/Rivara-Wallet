@@ -74,13 +74,13 @@
 		}
 		</script>
 
-	<!-- Load crypto libraries from CDN (same as old desktop app) -->
-	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bitcoinjs-lib-browser@5.1.7/bitcoinjs.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/tronweb@6.1.1/dist/TronWeb.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
-	<script src="https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
+	<!-- Crypto libraries served locally (copied from node_modules by scripts/copy-libs.js) -->
+	<script src="%sveltekit.assets%/libs/chart.umd.min.js"></script>
+	<script src="%sveltekit.assets%/libs/ethers.umd.min.js"></script>
+	<script src="%sveltekit.assets%/libs/bitcoinjs.min.js"></script>
+	<script src="%sveltekit.assets%/libs/TronWeb.js"></script>
+	<script src="%sveltekit.assets%/libs/nacl-fast.min.js"></script>
+	<script src="%sveltekit.assets%/libs/solana-web3.iife.min.js"></script>
 
 	<!-- Load wallet utility scripts from static folder -->
 	<script src="/ed25519-derive.js"></script>
@@ -111,7 +111,7 @@
 
 		// SECURITY: Enhanced logging and monitoring
 		(function() {
-			const devMode = localStorage.getItem('devMode') === 'true';
+			const devMode = localStorage.getItem('rivara_devmode') === 'true';
 			
 			// Security status logger
 			console.log('%c🔒 Rivara Wallet Security Status', 'color: #0891b2; font-size: 14px; font-weight: bold;');
