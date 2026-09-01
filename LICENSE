@@ -1,38 +1,23 @@
-DogeGage Wallet - Source Available License
+DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE PLUS (WTFPL+)
+Version 1, 2026
 
-Copyright (c) 2024-2026 DogeGage
+Copyright (C) 2026 Dogegage
 
-This code is made available for TRANSPARENCY AND PERSONAL USE.
+Everyone is permitted to copy, distribute, modify, run, fork, or redistribute
+copies of this software, and changing it is allowed.
 
-You MAY:
-- View, read, and audit the source code
-- Download and run the wallet locally for personal use
-- Fork and modify the code for your own personal use
-- Change logos, icons, and visual branding for personal experimentation
-- Contribute improvements back via pull requests
-- Learn from the code
-- Share with friends for educational purposes (not public distribution)
+TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION:
 
-You MAY NOT:
-- Use this code for ANY commercial purpose
-- Host this wallet (or any modified version) as a public service
-- Publicly redistribute this code (point people to the official repo instead)
-- Use this code to create a competing product or service
-- Remove or modify the DogeGage copyright headers/watermarks in source files
-- Claim this code as your own work
+0. You just DO WHAT THE FUCK YOU WANT TO.
 
-Basically: Use it yourself, don't host your own clone.
+DISCLAIMER OF WARRANTY & LIMITATION OF LIABILITY:
 
-NOTE: The API worker (worker.js) is not included in this repository because we're too lazy to move the API keys to environment variables. The worker just handles exchange functionality, balance checking, and price fetching - nothing sensitive. The wallet frontend is fully source available.
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
-This is SOURCE AVAILABLE software - the code is public for transparency and security auditing, but commercial and redistribution rights are reserved by DogeGage.
-
-ENFORCEMENT:
-Violations of this license will result in:
-- Permanent blacklisting from DogeGage services
-- DMCA takedown requests to hosting providers and GitHub
-- Legal action and pursuit of damages
-
-We actively monitor for unauthorized hosted copies and WILL pursue violators.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+UNDER NO CIRCUMSTANCES SHALL THE AUTHOR BE HELD LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES, INCLUDING
+BUT NOT LIMITED TO LOSS OF FUNDS, CRYPTOGRAPHIC KEY COMPROMISE, BLOCKCHAIN
+FORKS, FAILED TRANSACTIONS, HARDWARE DAMAGE, OR DATA LOSS ARISING IN ANY WAY
+OUT OF THE USE, REDISTRIBUTION, OR MODIFICATION OF THIS UNMAINTAINED SOFTWARE.
